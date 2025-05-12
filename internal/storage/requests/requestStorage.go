@@ -28,5 +28,7 @@ func (r *RequestStorage) Save(uID string, action models.CalcAction) error {
 }
 
 func New() *RequestStorage {
-	return &RequestStorage{}
+	return &RequestStorage{
+		requests: make(map[string][]models.CalcAction),
+	}
 }

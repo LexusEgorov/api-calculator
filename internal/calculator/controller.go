@@ -73,6 +73,7 @@ func (c CalcController) HandleSum(w http.ResponseWriter, r *http.Request) {
 		})
 
 		w.Write(fmt.Appendf(nil, "%f", res))
+		return
 	}
 
 	nums, err := c.prepareNums(stringedBody)
@@ -129,6 +130,7 @@ func (c CalcController) HandleMult(w http.ResponseWriter, r *http.Request) {
 		})
 
 		w.Write(fmt.Appendf(nil, "%f", res))
+		return
 	}
 
 	nums, err := c.prepareNums(stringedBody)
