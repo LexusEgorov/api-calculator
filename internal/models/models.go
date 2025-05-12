@@ -13,11 +13,11 @@ type UserRequest struct {
 	CalcAction
 }
 
-type Action int
+type Action string
 
 const (
-	SUM Action = iota
-	MULT
+	SUM  Action = "SUM"
+	MULT Action = "MULT"
 )
 
 var CacheNotFoundErr = errors.New("not cached")

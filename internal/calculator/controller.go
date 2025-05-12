@@ -1,6 +1,7 @@
 package calculator
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -150,7 +151,32 @@ func (c CalcController) HandleMult(w http.ResponseWriter, r *http.Request) {
 	w.Write(fmt.Appendf(nil, "%f", res))
 }
 
-func (c CalcController) HandleHistory(w http.ResponseWriter, r *http.Request) {}
+func (c CalcController) HandleHistory(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	uID := r.Header.Get("Authorization")
+
+	if uID == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	actions := c.storage.Get(uID)
+
+	res, err := json.Marshal(actions)
+
+	if err != nil {
+		c.logger.Errorf("calcController.HandleHistory: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(res)
+}
 
 func (c CalcController) prepareNums(input string) ([]float64, error) {
 	stringedNums := strings.Split(strings.ReplaceAll(input, " ", ""), ",")
