@@ -94,7 +94,62 @@ func (c CalcController) HandleSum(w http.ResponseWriter, r *http.Request) {
 	w.Write(fmt.Appendf(nil, "%f", res))
 }
 
-func (c CalcController) HandleMult(w http.ResponseWriter, r *http.Request)    {}
+func (c CalcController) HandleMult(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	uID := r.Header.Get("Authorization")
+
+	if uID == "" {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+
+	if err != nil {
+		c.logger.Errorf("calcController.HandleMult: %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	defer r.Body.Close()
+
+	stringedBody := string(body)
+	res, err := c.cache.Get(stringedBody, models.MULT)
+
+	if err == nil {
+		c.storage.Save(uID, models.CalcAction{
+			Input:  stringedBody,
+			Action: models.MULT,
+			Result: res,
+		})
+
+		w.Write(fmt.Appendf(nil, "%f", res))
+	}
+
+	nums, err := c.prepareNums(stringedBody)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res = c.calc.Mult(nums)
+	calcAction := models.CalcAction{
+		Input:  stringedBody,
+		Action: models.MULT,
+		Result: res,
+	}
+
+	c.cache.Save(calcAction)
+	c.storage.Save(uID, calcAction)
+
+	w.Write(fmt.Appendf(nil, "%f", res))
+}
+
 func (c CalcController) HandleHistory(w http.ResponseWriter, r *http.Request) {}
 
 func (c CalcController) prepareNums(input string) ([]float64, error) {
