@@ -2,7 +2,6 @@ package cache
 
 import (
 	"api-calculator/internal/models"
-	"fmt"
 	"sync"
 )
 
@@ -34,8 +33,6 @@ func (c *Cache) Save(action models.CalcAction) error {
 	actionMap[action.Input] = action.Result
 	c.cache[action.Action] = actionMap
 	c.mu.Unlock()
-
-	fmt.Println(c.cache)
 
 	return nil
 }
