@@ -14,7 +14,7 @@ import (
 )
 
 type Cacher interface {
-	Save(models.CalcAction) error
+	Save(action models.CalcAction) error
 	Get(input string, action models.Action) (float64, error)
 }
 
