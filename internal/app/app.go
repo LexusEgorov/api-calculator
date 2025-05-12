@@ -5,6 +5,7 @@ import (
 
 	"api-calculator/internal/calculator"
 	"api-calculator/internal/server"
+	"api-calculator/internal/storage/requests"
 )
 
 type App struct {
@@ -14,9 +15,9 @@ type App struct {
 
 func New(logger *logrus.Logger) *App {
 	//TODO: cache
-	//TODO: storage
+	reqStorage := requests.New()
 
-	controller := calculator.New(logger, nil, nil)
+	controller := calculator.New(logger, nil, reqStorage)
 	s := server.New(controller)
 
 	return &App{
