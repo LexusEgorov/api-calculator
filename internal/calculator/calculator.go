@@ -1,8 +1,6 @@
 package calculator
 
-type calculator struct{}
-
-func (c calculator) Sum(nums []float64) float64 {
+func sum(nums []float64) float64 {
 	var sum float64
 
 	for _, num := range nums {
@@ -12,7 +10,7 @@ func (c calculator) Sum(nums []float64) float64 {
 	return sum
 }
 
-func (c calculator) Mult(nums []float64) float64 {
+func mult(nums []float64) float64 {
 	var mult float64 = 1
 
 	for _, num := range nums {

@@ -13,7 +13,7 @@ import (
 //TODO: Add middlewares: auth (check Id); logging (requests + codes)
 
 func main() {
-	log := logger.New()
+	log := logger.New("local")
 	app := app.New(log)
 
 	if err := app.Run(); err != nil {
