@@ -3,28 +3,40 @@ package server
 import (
 	"net/http"
 
-	"api-calculator/internal/calculator"
+	"github.com/sirupsen/logrus"
+
+	mdw "api-calculator/internal/middleware"
 )
 
-type Server struct {
-	c *calculator.CalcController
-	s *http.Server
+type CalcHandler interface {
+	HandleHistory(w http.ResponseWriter, r *http.Request)
+	HandleSum(w http.ResponseWriter, r *http.Request)
+	HandleMult(w http.ResponseWriter, r *http.Request)
 }
 
-func New(controller *calculator.CalcController) *Server {
+type Server struct {
+	handler CalcHandler
+	server  *http.Server
+	logger  *logrus.Logger
+}
+
+func New(handler CalcHandler, logger *logrus.Logger) *Server {
+	middleware := mdw.New(logger)
 	server := Server{
-		c: controller,
-		s: nil, //TODO
+		handler: handler,
+		logger:  logger,
+		server:  nil, //TODO
 	}
 
-	http.HandleFunc("/sum", controller.HandleSum)
-	http.HandleFunc("/mult", controller.HandleMult)
-	http.HandleFunc("/story", controller.HandleHistory)
+	http.HandleFunc("/sum", middleware.WithLogging(middleware.WithAuth(handler.HandleSum)))
+	http.HandleFunc("/mult", middleware.WithLogging(middleware.WithAuth(handler.HandleMult)))
+	http.HandleFunc("/history", middleware.WithLogging(middleware.WithAuth(handler.HandleHistory)))
 
 	return &server
 }
 
 func (s Server) Run() error {
+	s.logger.Info("Server is running on localhost:8080")
 	err := http.ListenAndServe(":8080", nil)
 
 	if err != nil {

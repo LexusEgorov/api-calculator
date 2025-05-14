@@ -10,6 +10,12 @@ type RequestStorage struct {
 	mu       sync.Mutex
 }
 
+func New() *RequestStorage {
+	return &RequestStorage{
+		requests: make(map[string][]models.CalcAction),
+	}
+}
+
 func (r *RequestStorage) Get(uID string) []models.CalcAction {
 	r.mu.Lock()
 	requests := r.requests[uID]
@@ -18,17 +24,9 @@ func (r *RequestStorage) Get(uID string) []models.CalcAction {
 	return requests
 }
 
-func (r *RequestStorage) Save(uID string, action models.CalcAction) error {
+func (r *RequestStorage) Set(uID string, action models.CalcAction) {
 	r.mu.Lock()
 	requests := append(r.requests[uID], action)
 	r.requests[uID] = requests
 	r.mu.Unlock()
-
-	return nil
-}
-
-func New() *RequestStorage {
-	return &RequestStorage{
-		requests: make(map[string][]models.CalcAction),
-	}
 }

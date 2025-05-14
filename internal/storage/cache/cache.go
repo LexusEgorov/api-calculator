@@ -13,30 +13,6 @@ type Cache struct {
 	mu    sync.Mutex
 }
 
-// Get implements calculator.Cacher.
-func (c *Cache) Get(input string, action models.Action) (float64, error) {
-	c.mu.Lock()
-	res, isFound := c.cache[action][input]
-	c.mu.Unlock()
-
-	if !isFound {
-		return 0, models.CacheNotFoundErr
-	}
-
-	return res, nil
-}
-
-// Save implements calculator.Cacher.
-func (c *Cache) Save(action models.CalcAction) error {
-	c.mu.Lock()
-	actionMap := c.cache[action.Action]
-	actionMap[action.Input] = action.Result
-	c.cache[action.Action] = actionMap
-	c.mu.Unlock()
-
-	return nil
-}
-
 func New() *Cache {
 	cacheMap := make(cacheMap)
 	cacheMap[models.MULT] = make(actionsMap)
@@ -45,4 +21,28 @@ func New() *Cache {
 	return &Cache{
 		cache: cacheMap,
 	}
+}
+
+func (c *Cache) Get(input string, action models.Action) (*models.CalcAction, error) {
+	c.mu.Lock()
+	res, isFound := c.cache[action][input]
+	c.mu.Unlock()
+
+	if !isFound {
+		return nil, models.CacheNotFoundErr
+	}
+
+	return &models.CalcAction{
+		Input:  input,
+		Action: action,
+		Result: res,
+	}, nil
+}
+
+func (c *Cache) Set(action models.CalcAction) {
+	c.mu.Lock()
+	actionMap := c.cache[action.Action]
+	actionMap[action.Input] = action.Result
+	c.cache[action.Action] = actionMap
+	c.mu.Unlock()
 }
