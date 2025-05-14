@@ -3,6 +3,7 @@ package main
 import (
 	"api-calculator/internal/app"
 	"api-calculator/internal/logger"
+	"os"
 )
 
 //TODO: Add unit tests
@@ -13,7 +14,8 @@ import (
 //TODO: Add middlewares: auth (check Id); logging (requests + codes)
 
 func main() {
-	log := logger.New("local")
+	deployment := os.Getenv("DEPLOYMENT")
+	log := logger.New(deployment)
 	app := app.New(log)
 
 	if err := app.Run(); err != nil {

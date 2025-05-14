@@ -1,5 +1,7 @@
 services:
   calculator:
+    environment:
+      - DEPLOYMENT=local
     image: api-calculator
     build:
       context: .
