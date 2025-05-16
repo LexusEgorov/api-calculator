@@ -50,7 +50,7 @@ func (c calcController) Sum(uID, input string) (*models.CalcAction, error) {
 		return nil, err
 	}
 
-	res := sum(nums)
+	res := sumNums(nums...)
 
 	calcAction := models.CalcAction{
 		Input:  input,
@@ -80,7 +80,7 @@ func (c calcController) Mult(uID, input string) (*models.CalcAction, error) {
 		return nil, err
 	}
 
-	res := mult(nums)
+	res := multNums(nums...)
 
 	calcAction := models.CalcAction{
 		Input:  input,

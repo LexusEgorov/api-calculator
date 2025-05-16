@@ -1,6 +1,6 @@
 package calculator
 
-func sum(nums []float64) float64 {
+func sumNums(nums ...float64) float64 {
 	var sum float64
 
 	for _, num := range nums {
@@ -10,7 +10,7 @@ func sum(nums []float64) float64 {
 	return sum
 }
 
-func mult(nums []float64) float64 {
+func multNums(nums ...float64) float64 {
 	var mult float64 = 1
 
 	for _, num := range nums {
