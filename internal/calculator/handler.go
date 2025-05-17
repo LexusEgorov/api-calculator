@@ -1,6 +1,7 @@
 package calculator
 
 import (
+	"api-calculator/internal/models"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -29,7 +30,7 @@ func (c CalcHandler) HandleSum(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.controller.Sum(uID, body)
+	res, err := c.controller.Sum(uID, *body)
 
 	if err != nil {
 		c.sendBadResponse(w)
@@ -48,7 +49,7 @@ func (c CalcHandler) HandleMult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := c.controller.Mult(uID, body)
+	res, err := c.controller.Mult(uID, *body)
 
 	if err != nil {
 		c.sendBadResponse(w)
@@ -64,16 +65,25 @@ func (c CalcHandler) HandleHistory(w http.ResponseWriter, r *http.Request) {
 	c.sendGoodResponse(w, c.controller.History(uID))
 }
 
-func (c CalcHandler) getBody(body io.ReadCloser) (string, error) {
+func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
 	defer body.Close()
 	rawBody, err := io.ReadAll(body)
 
 	if err != nil {
 		c.logger.Errorf("calcHandler.getBody: %v", err)
-		return "", err
+		return nil, err
 	}
 
-	return string(rawBody), nil
+	var inputNums models.Input
+
+	err = json.Unmarshal(rawBody, &inputNums)
+
+	if err != nil {
+		c.logger.Errorf("calcHandler.getBody: %v", err)
+		return nil, err
+	}
+
+	return &inputNums, nil
 }
 
 func (c CalcHandler) sendBadResponse(w http.ResponseWriter) {

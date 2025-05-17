@@ -35,7 +35,7 @@ func (c calcMiddleware) WithLogging(next http.HandlerFunc) http.HandlerFunc {
 		next.ServeHTTP(rw, r)
 		code := rw.code
 
-		if code >= 400 && code <= 599 {
+		if code >= http.StatusBadRequest && code <= http.StatusNetworkAuthenticationRequired {
 			c.logger.Errorf("%d %s %s %s", code, r.Method, r.RequestURI, time.Since(timeStart))
 		} else {
 			c.logger.Infof("%d %s %s %s", code, r.Method, r.RequestURI, time.Since(timeStart))

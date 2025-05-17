@@ -34,8 +34,8 @@ func newController(logger *logrus.Logger, cache Cacher, storage Storager) calcCo
 	}
 }
 
-func (c calcController) Sum(uID, input string) (*models.CalcAction, error) {
-	cached, err := c.cache.Get(input, models.SUM)
+func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction, error) {
+	cached, err := c.cache.Get(input.Input, models.SUM)
 
 	if err == nil {
 		c.storage.Set(uID, *cached)
@@ -43,7 +43,7 @@ func (c calcController) Sum(uID, input string) (*models.CalcAction, error) {
 		return cached, nil
 	}
 
-	nums, err := c.prepareNums(input)
+	nums, err := c.prepareNums(input.Input)
 
 	if err != nil {
 		c.logger.Errorf("calcController.Sum: %v", err)
@@ -53,7 +53,7 @@ func (c calcController) Sum(uID, input string) (*models.CalcAction, error) {
 	res := sumNums(nums...)
 
 	calcAction := models.CalcAction{
-		Input:  input,
+		Input:  input.Input,
 		Action: models.SUM,
 		Result: res,
 	}
@@ -64,8 +64,8 @@ func (c calcController) Sum(uID, input string) (*models.CalcAction, error) {
 	return &calcAction, nil
 }
 
-func (c calcController) Mult(uID, input string) (*models.CalcAction, error) {
-	cached, err := c.cache.Get(input, models.MULT)
+func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction, error) {
+	cached, err := c.cache.Get(input.Input, models.MULT)
 
 	if err == nil {
 		c.storage.Set(uID, *cached)
@@ -73,7 +73,7 @@ func (c calcController) Mult(uID, input string) (*models.CalcAction, error) {
 		return cached, nil
 	}
 
-	nums, err := c.prepareNums(input)
+	nums, err := c.prepareNums(input.Input)
 
 	if err != nil {
 		c.logger.Errorf("calcController.Mult: %v", err)
@@ -83,7 +83,7 @@ func (c calcController) Mult(uID, input string) (*models.CalcAction, error) {
 	res := multNums(nums...)
 
 	calcAction := models.CalcAction{
-		Input:  input,
+		Input:  input.Input,
 		Action: models.MULT,
 		Result: res,
 	}
