@@ -25,7 +25,13 @@ func New() *Cache {
 
 func (c *Cache) Get(input string, action models.Action) (*models.CalcAction, error) {
 	c.mu.Lock()
-	res, isFound := c.cache[action][input]
+	actionsMap, isFound := c.cache[action]
+
+	if !isFound {
+		return nil, models.CacheNotFoundErr
+	}
+
+	res, isFound := actionsMap[input]
 	c.mu.Unlock()
 
 	if !isFound {
@@ -41,8 +47,15 @@ func (c *Cache) Get(input string, action models.Action) (*models.CalcAction, err
 
 func (c *Cache) Set(action models.CalcAction) {
 	c.mu.Lock()
-	actionMap := c.cache[action.Action]
-	actionMap[action.Input] = action.Result
-	c.cache[action.Action] = actionMap
+	actionsMap, isFound := c.cache[action.Action]
+
+	if !isFound {
+		c.cache[action.Action] = make(map[string]float64)
+		c.Set(action)
+		return
+	}
+
+	actionsMap[action.Input] = action.Result
+	c.cache[action.Action] = actionsMap
 	c.mu.Unlock()
 }
