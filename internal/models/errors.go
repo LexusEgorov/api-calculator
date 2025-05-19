@@ -5,8 +5,8 @@ import (
 	"fmt"
 )
 
-var CacheNotFoundErr = errors.New("not cached")
+var ErrCacheNotFound = errors.New("not cached")
 
 func NewCacheMapErr(key string) error {
-	return errors.New(fmt.Sprintf("cache: can't set to map with key: %s", key))
+	return fmt.Errorf("cache: can't set to map with key: %s", key)
 }

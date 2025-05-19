@@ -67,7 +67,13 @@ func (c CalcHandler) HandleHistory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
-	defer body.Close()
+	defer func() {
+		err := body.Close()
+
+		if err != nil {
+			c.logger.Errorf("calcHandler.getBody: %v", err)
+		}
+	}()
 	rawBody, err := io.ReadAll(body)
 
 	if err != nil {
@@ -100,7 +106,11 @@ func (c CalcHandler) sendBadResponse(w http.ResponseWriter, err error) {
 	}
 
 	w.WriteHeader(http.StatusBadRequest)
-	w.Write(body)
+	_, err = w.Write(body)
+
+	if err != nil {
+		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
+	}
 }
 
 func (c CalcHandler) sendInternalResponse(w http.ResponseWriter) {
@@ -116,5 +126,9 @@ func (c CalcHandler) sendGoodResponse(w http.ResponseWriter, body interface{}) {
 	}
 
 	w.Header().Add("Content-Type", "application/json")
-	w.Write(res)
+	_, err = w.Write(res)
+
+	if err != nil {
+		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
+	}
 }

@@ -18,5 +18,5 @@ type Action string
 
 const (
 	SUM  Action = "SUM"
-	MULT        = "MULT"
+	MULT Action = "MULT"
 )

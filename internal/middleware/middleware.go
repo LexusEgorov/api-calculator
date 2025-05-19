@@ -60,7 +60,12 @@ func (c calcMiddleware) WithAuth(next http.HandlerFunc) http.HandlerFunc {
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(body)
+			_, err = w.Write(body)
+
+			if err != nil {
+				c.logger.Errorf("middleware.WithAuth: %v", err)
+			}
+
 			return
 		}
 

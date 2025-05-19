@@ -47,7 +47,7 @@ func fetchConfigPath() (string, error) {
 		path = os.Getenv("CONFIG_PATH")
 
 		if path == "" {
-			return "", errors.New("config path is required!")
+			return "", errors.New("config path is required")
 		}
 	}
 

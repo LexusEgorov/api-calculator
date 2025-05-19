@@ -31,13 +31,13 @@ func (c *Cache) Get(input string, action models.Action) (models.CalcAction, erro
 	actionsMap, isFound := c.cache[action]
 
 	if !isFound {
-		return models.CalcAction{}, models.CacheNotFoundErr
+		return models.CalcAction{}, models.ErrCacheNotFound
 	}
 
 	res, isFound := actionsMap[input]
 
 	if !isFound {
-		return models.CalcAction{}, models.CacheNotFoundErr
+		return models.CalcAction{}, models.ErrCacheNotFound
 	}
 
 	return models.CalcAction{
