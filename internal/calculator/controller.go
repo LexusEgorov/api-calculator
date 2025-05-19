@@ -12,7 +12,7 @@ import (
 
 type Cacher interface {
 	Set(action models.CalcAction) error
-	Get(input string, action models.Action) (*models.CalcAction, error)
+	Get(input string, action models.Action) (models.CalcAction, error)
 }
 
 type Storager interface {
@@ -38,9 +38,9 @@ func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction,
 	cached, err := c.cache.Get(input.Input, models.SUM)
 
 	if err == nil {
-		c.storage.Set(uID, *cached)
+		c.storage.Set(uID, cached)
 
-		return cached, nil
+		return &cached, nil
 	}
 
 	nums, err := c.prepareNums(input.Input)
@@ -73,9 +73,9 @@ func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction
 	cached, err := c.cache.Get(input.Input, models.MULT)
 
 	if err == nil {
-		c.storage.Set(uID, *cached)
+		c.storage.Set(uID, cached)
 
-		return cached, nil
+		return &cached, nil
 	}
 
 	nums, err := c.prepareNums(input.Input)

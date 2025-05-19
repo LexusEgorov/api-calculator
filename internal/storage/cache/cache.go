@@ -24,23 +24,23 @@ func New() *Cache {
 	}
 }
 
-func (c *Cache) Get(input string, action models.Action) (*models.CalcAction, error) {
+func (c *Cache) Get(input string, action models.Action) (models.CalcAction, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	actionsMap, isFound := c.cache[action]
 
 	if !isFound {
-		return nil, models.CacheNotFoundErr
+		return models.CalcAction{}, models.CacheNotFoundErr
 	}
 
 	res, isFound := actionsMap[input]
 
 	if !isFound {
-		return nil, models.CacheNotFoundErr
+		return models.CalcAction{}, models.CacheNotFoundErr
 	}
 
-	return &models.CalcAction{
+	return models.CalcAction{
 		Input:  input,
 		Action: action,
 		Result: res,
