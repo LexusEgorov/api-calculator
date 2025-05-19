@@ -28,7 +28,7 @@ func (rw *responseWriter) WriteHeader(code int) {
 }
 
 func (c calcMiddleware) WithLogging(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		rw := &responseWriter{ResponseWriter: w, code: http.StatusOK}
 
 		timeStart := time.Now()
@@ -40,16 +40,29 @@ func (c calcMiddleware) WithLogging(next http.HandlerFunc) http.HandlerFunc {
 		} else {
 			c.logger.Infof("%d %s %s %s", code, r.Method, r.RequestURI, time.Since(timeStart))
 		}
-	})
+	}
 }
 
 func (c calcMiddleware) WithAuth(next http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == "" {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
 		next.ServeHTTP(w, r)
-	})
+	}
+}
+
+func (c calcMiddleware) WithRecover(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if r := recover(); r != nil {
+				c.logger.Errorf("Recovered: %v", r)
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		}()
+
+		next.ServeHTTP(w, r)
+	}
 }

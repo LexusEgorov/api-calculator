@@ -28,9 +28,9 @@ func New(handler CalcHandler, logger *logrus.Logger) *Server {
 		server:  nil, //TODO
 	}
 
-	http.HandleFunc("/sum", middleware.WithLogging(middleware.WithAuth(handler.HandleSum)))
-	http.HandleFunc("/mult", middleware.WithLogging(middleware.WithAuth(handler.HandleMult)))
-	http.HandleFunc("/history", middleware.WithLogging(middleware.WithAuth(handler.HandleHistory)))
+	http.HandleFunc("/sum", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleSum))))
+	http.HandleFunc("/mult", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleMult))))
+	http.HandleFunc("/history", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleHistory))))
 
 	return &server
 }
