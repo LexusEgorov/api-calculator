@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
@@ -16,16 +17,16 @@ type CalcHandler interface {
 
 type Server struct {
 	handler CalcHandler
-	server  *http.Server
 	logger  *logrus.Logger
+	port    int
 }
 
-func New(handler CalcHandler, logger *logrus.Logger) *Server {
+func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 	middleware := mdw.New(logger)
 	server := Server{
 		handler: handler,
 		logger:  logger,
-		server:  nil, //TODO
+		port:    port,
 	}
 
 	http.HandleFunc("/sum", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleSum))))
@@ -36,8 +37,8 @@ func New(handler CalcHandler, logger *logrus.Logger) *Server {
 }
 
 func (s Server) Run() error {
-	s.logger.Info("Server is running on localhost:8080")
-	err := http.ListenAndServe(":8080", nil)
+	s.logger.Infof("Server is running on localhost:%d", s.port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
 
 	if err != nil {
 		return err

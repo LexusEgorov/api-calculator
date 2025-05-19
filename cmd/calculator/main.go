@@ -1,23 +1,27 @@
 package main
 
 import (
-	"os"
+	"log"
 
 	"github.com/LexusEgorov/api-calculator/internal/app"
+	"github.com/LexusEgorov/api-calculator/internal/config"
 	"github.com/LexusEgorov/api-calculator/internal/logger"
 )
 
 //TODO: Add unit tests
 //TODO: Move to Echo
 //TODO: Add documentation
-//TODO: Add makefile for create documentation
-//TODO: Add more logs
-//TODO: Add middlewares: auth (check Id); logging (requests + codes)
 
 func main() {
-	deployment := os.Getenv("DEPLOYMENT")
-	log := logger.New(deployment)
-	app := app.New(log)
+	cfg, err := config.New()
+
+	if err != nil {
+		log.Fatalf("Unable to load config: %v", err)
+		return
+	}
+
+	log := logger.New(cfg.Env)
+	app := app.New(log, cfg.Server.Port)
 
 	if err := app.Run(); err != nil {
 		log.Fatalf("Can't start application: %v", err)

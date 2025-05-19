@@ -1,8 +1,10 @@
 services:
   calculator:
-    environment:
-      - DEPLOYMENT=local
     image: api-calculator
+    environment:
+      CONFIG_PATH: ${CONFIG_PATH}
+    volumes:
+      - ./configs:/app/configs
     build:
       context: .
     ports:

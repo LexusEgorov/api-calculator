@@ -29,6 +29,8 @@ WORKDIR /app
 
 #2.3 Копируем собранное приложение
 COPY --from=builder /app/calculator ./
+#2.3 Копируем файлы конфигурации
+COPY --from=builder /app/configs ./configs
 
 #2.4 Запуск
 ENTRYPOINT [ "./calculator" ]

@@ -14,12 +14,12 @@ type App struct {
 	logger *logrus.Logger
 }
 
-func New(logger *logrus.Logger) *App {
+func New(logger *logrus.Logger, port int) *App {
 	cacheStorage := cache.New()
 	reqStorage := requests.New()
 
 	handler := calculator.New(logger, cacheStorage, reqStorage)
-	server := srv.New(handler, logger)
+	server := srv.New(handler, logger, port)
 
 	return &App{
 		server: server,
