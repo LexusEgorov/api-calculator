@@ -7,7 +7,7 @@ Authorization: <uID> - разделение запросов от пользов
 
 ## Описание ручек
 
-POST (text/plain)
+POST (application/json)
 
 localhost:8080/sum
 localhost:8080/mult
