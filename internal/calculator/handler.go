@@ -27,14 +27,14 @@ func (c CalcHandler) HandleSum(w http.ResponseWriter, r *http.Request) {
 	body, err := c.getBody(r.Body)
 
 	if err != nil {
-		c.sendBadResponse(w)
+		c.sendBadResponse(w, err)
 		return
 	}
 
 	res, err := c.controller.Sum(uID, *body)
 
 	if err != nil {
-		c.sendBadResponse(w)
+		c.sendBadResponse(w, err)
 		return
 	}
 
@@ -46,14 +46,14 @@ func (c CalcHandler) HandleMult(w http.ResponseWriter, r *http.Request) {
 	body, err := c.getBody(r.Body)
 
 	if err != nil {
-		c.sendBadResponse(w)
+		c.sendBadResponse(w, err)
 		return
 	}
 
 	res, err := c.controller.Mult(uID, *body)
 
 	if err != nil {
-		c.sendBadResponse(w)
+		c.sendBadResponse(w, err)
 		return
 	}
 
@@ -87,8 +87,20 @@ func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
 	return &inputNums, nil
 }
 
-func (c CalcHandler) sendBadResponse(w http.ResponseWriter) {
+func (c CalcHandler) sendBadResponse(w http.ResponseWriter, err error) {
+	c.logger.Errorf("badResponse: %v", err)
+	body, err := json.Marshal(models.ErrorResponse{
+		Error: err.Error(),
+	})
+
+	if err != nil {
+		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
+		c.sendInternalResponse(w)
+		return
+	}
+
 	w.WriteHeader(http.StatusBadRequest)
+	w.Write(body)
 }
 
 func (c CalcHandler) sendInternalResponse(w http.ResponseWriter) {
