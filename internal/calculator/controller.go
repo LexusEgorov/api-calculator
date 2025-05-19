@@ -11,7 +11,7 @@ import (
 )
 
 type Cacher interface {
-	Set(action models.CalcAction)
+	Set(action models.CalcAction) error
 	Get(input string, action models.Action) (*models.CalcAction, error)
 }
 
@@ -58,7 +58,12 @@ func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction,
 		Result: res,
 	}
 
-	c.cache.Set(calcAction)
+	err = c.cache.Set(calcAction)
+
+	if err != nil {
+		c.logger.Errorf("cache.Set: %v", err)
+	}
+
 	c.storage.Set(uID, calcAction)
 
 	return &calcAction, nil
@@ -88,7 +93,12 @@ func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction
 		Result: res,
 	}
 
-	c.cache.Set(calcAction)
+	err = c.cache.Set(calcAction)
+
+	if err != nil {
+		c.logger.Errorf("cache.Set: %v", err)
+	}
+
 	c.storage.Set(uID, calcAction)
 
 	return &calcAction, nil
