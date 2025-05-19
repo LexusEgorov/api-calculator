@@ -20,6 +20,6 @@ func main() {
 	app := app.New(log)
 
 	if err := app.Run(); err != nil {
-		panic(err)
+		log.Fatalf("Can't start application: %v", err)
 	}
 }
