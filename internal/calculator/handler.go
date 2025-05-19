@@ -1,12 +1,13 @@
 package calculator
 
 import (
-	"api-calculator/internal/models"
 	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/sirupsen/logrus"
+
+	"github.com/LexusEgorov/api-calculator/internal/models"
 )
 
 type CalcHandler struct {

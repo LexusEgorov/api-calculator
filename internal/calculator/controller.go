@@ -7,7 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"api-calculator/internal/models"
+	"github.com/LexusEgorov/api-calculator/internal/models"
 )
 
 type Cacher interface {

@@ -3,10 +3,10 @@ package app
 import (
 	"github.com/sirupsen/logrus"
 
-	"api-calculator/internal/calculator"
-	srv "api-calculator/internal/server"
-	"api-calculator/internal/storage/cache"
-	"api-calculator/internal/storage/requests"
+	"github.com/LexusEgorov/api-calculator/internal/calculator"
+	srv "github.com/LexusEgorov/api-calculator/internal/server"
+	"github.com/LexusEgorov/api-calculator/internal/storage/cache"
+	"github.com/LexusEgorov/api-calculator/internal/storage/requests"
 )
 
 type App struct {

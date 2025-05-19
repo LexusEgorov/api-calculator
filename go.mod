@@ -1,4 +1,4 @@
-module api-calculator
+module github.com/LexusEgorov/api-calculator
 
 go 1.23.1
 

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"api-calculator/internal/app"
-	"api-calculator/internal/logger"
 	"os"
+
+	"github.com/LexusEgorov/api-calculator/internal/app"
+	"github.com/LexusEgorov/api-calculator/internal/logger"
 )
 
 //TODO: Add unit tests

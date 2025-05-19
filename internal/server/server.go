@@ -5,7 +5,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	mdw "api-calculator/internal/middleware"
+	mdw "github.com/LexusEgorov/api-calculator/internal/middleware"
 )
 
 type CalcHandler interface {

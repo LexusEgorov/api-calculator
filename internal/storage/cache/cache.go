@@ -1,8 +1,9 @@
 package cache
 
 import (
-	"api-calculator/internal/models"
 	"sync"
+
+	"github.com/LexusEgorov/api-calculator/internal/models"
 )
 
 type actionsMap map[string]float64
