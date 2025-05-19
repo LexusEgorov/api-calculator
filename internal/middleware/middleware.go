@@ -1,9 +1,11 @@
 package middleware
 
 import (
+	"encoding/json"
 	"net/http"
 	"time"
 
+	"github.com/LexusEgorov/api-calculator/internal/models"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,7 +48,19 @@ func (c calcMiddleware) WithLogging(next http.HandlerFunc) http.HandlerFunc {
 func (c calcMiddleware) WithAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get("Authorization") == "" {
+			body, err := json.Marshal(models.ErrorResponse{
+				Error: "Header 'Authorization' is required!",
+			})
+
+			if err != nil {
+				c.logger.Errorf("middleware.WithAuth: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
+			w.Write(body)
 			return
 		}
 
