@@ -2,14 +2,22 @@ package logger
 
 import "github.com/sirupsen/logrus"
 
-func New() *logrus.Logger {
+func New(deployment string) *logrus.Logger {
 	logger := logrus.New()
 
-	logger.SetLevel(logrus.DebugLevel)
-	logger.SetFormatter(&logrus.TextFormatter{
-		ForceColors:   true,
-		FullTimestamp: true,
-	})
+	switch deployment {
+	case "local":
+		logger.SetLevel(logrus.DebugLevel)
+		logger.SetFormatter(&logrus.TextFormatter{
+			ForceColors:   true,
+			FullTimestamp: true,
+		})
+	case "production":
+		fallthrough
+	default:
+		logger.SetLevel(logrus.InfoLevel)
+		logger.SetFormatter(&logrus.JSONFormatter{})
+	}
 
 	return logger
 }

@@ -1,31 +1,44 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
-	"api-calculator/internal/calculator"
+	"github.com/sirupsen/logrus"
+
+	mdw "github.com/LexusEgorov/api-calculator/internal/middleware"
 )
 
-type Server struct {
-	c *calculator.CalcController
-	s *http.Server
+type CalcHandler interface {
+	HandleHistory(w http.ResponseWriter, r *http.Request)
+	HandleSum(w http.ResponseWriter, r *http.Request)
+	HandleMult(w http.ResponseWriter, r *http.Request)
 }
 
-func New(controller *calculator.CalcController) *Server {
+type Server struct {
+	handler CalcHandler
+	logger  *logrus.Logger
+	port    int
+}
+
+func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
+	middleware := mdw.New(logger)
 	server := Server{
-		c: controller,
-		s: nil, //TODO
+		handler: handler,
+		logger:  logger,
+		port:    port,
 	}
 
-	http.HandleFunc("/sum", controller.HandleSum)
-	http.HandleFunc("/mult", controller.HandleMult)
-	http.HandleFunc("/story", controller.HandleHistory)
+	http.HandleFunc("/sum", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleSum))))
+	http.HandleFunc("/mult", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleMult))))
+	http.HandleFunc("/history", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleHistory))))
 
 	return &server
 }
 
 func (s Server) Run() error {
-	err := http.ListenAndServe(":8080", nil)
+	s.logger.Infof("Server is running on localhost:%d", s.port)
+	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
 
 	if err != nil {
 		return err

@@ -1,0 +1,11 @@
+services:
+  calculator:
+    image: api-calculator
+    environment:
+      CONFIG_PATH: ${CONFIG_PATH}
+    volumes:
+      - ./configs:/app/configs
+    build:
+      context: .
+    ports:
+      - 8080:8080

@@ -1,186 +1,114 @@
 package calculator
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 
-	"api-calculator/internal/models"
+	"github.com/LexusEgorov/api-calculator/internal/models"
 )
 
 type Cacher interface {
-	Save(action models.CalcAction) error
-	Get(input string, action models.Action) (float64, error)
+	Set(action models.CalcAction) error
+	Get(input string, action models.Action) (models.CalcAction, error)
 }
 
 type Storager interface {
-	Save(uID string, action models.CalcAction) error
+	Set(uID string, action models.CalcAction)
 	Get(uID string) []models.CalcAction
 }
 
-type CalcController struct {
-	calc    calculator
+type calcController struct {
 	cache   Cacher
 	storage Storager
 	logger  *logrus.Logger
 }
 
-func New(logger *logrus.Logger, cache Cacher, storage Storager) *CalcController {
-	return &CalcController{
-		calc:    calculator{},
+func newController(logger *logrus.Logger, cache Cacher, storage Storager) calcController {
+	return calcController{
 		cache:   cache,
 		storage: storage,
 		logger:  logger,
 	}
 }
 
-func (c CalcController) HandleSum(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	uID := r.Header.Get("Authorization")
-
-	if uID == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-
-	if err != nil {
-		c.logger.Errorf("calcController.HandleSum: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	defer r.Body.Close()
-
-	stringedBody := string(body)
-	res, err := c.cache.Get(stringedBody, models.SUM)
+func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction, error) {
+	cached, err := c.cache.Get(input.Input, models.SUM)
 
 	if err == nil {
-		c.storage.Save(uID, models.CalcAction{
-			Input:  stringedBody,
-			Action: models.SUM,
-			Result: res,
-		})
+		c.storage.Set(uID, cached)
 
-		w.Write(fmt.Appendf(nil, "%f", res))
-		return
+		return &cached, nil
 	}
 
-	nums, err := c.prepareNums(stringedBody)
+	nums, err := c.prepareNums(input.Input)
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		c.logger.Errorf("calcController.Sum: %v", err)
+		return nil, err
 	}
 
-	res = c.calc.Sum(nums)
+	res := sumNums(nums...)
+
 	calcAction := models.CalcAction{
-		Input:  stringedBody,
+		Input:  input.Input,
 		Action: models.SUM,
 		Result: res,
 	}
 
-	c.cache.Save(calcAction)
-	c.storage.Save(uID, calcAction)
+	err = c.cache.Set(calcAction)
 
-	w.Write(fmt.Appendf(nil, "%f", res))
+	if err != nil {
+		c.logger.Errorf("cache.Set: %v", err)
+	}
+
+	c.storage.Set(uID, calcAction)
+
+	return &calcAction, nil
 }
 
-func (c CalcController) HandleMult(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	uID := r.Header.Get("Authorization")
-
-	if uID == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	body, err := io.ReadAll(r.Body)
-
-	if err != nil {
-		c.logger.Errorf("calcController.HandleMult: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	defer r.Body.Close()
-
-	stringedBody := string(body)
-	res, err := c.cache.Get(stringedBody, models.MULT)
+func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction, error) {
+	cached, err := c.cache.Get(input.Input, models.MULT)
 
 	if err == nil {
-		c.storage.Save(uID, models.CalcAction{
-			Input:  stringedBody,
-			Action: models.MULT,
-			Result: res,
-		})
+		c.storage.Set(uID, cached)
 
-		w.Write(fmt.Appendf(nil, "%f", res))
-		return
+		return &cached, nil
 	}
 
-	nums, err := c.prepareNums(stringedBody)
+	nums, err := c.prepareNums(input.Input)
 
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
+		c.logger.Errorf("calcController.Mult: %v", err)
+		return nil, err
 	}
 
-	res = c.calc.Mult(nums)
+	res := multNums(nums...)
+
 	calcAction := models.CalcAction{
-		Input:  stringedBody,
+		Input:  input.Input,
 		Action: models.MULT,
 		Result: res,
 	}
 
-	c.cache.Save(calcAction)
-	c.storage.Save(uID, calcAction)
-
-	w.Write(fmt.Appendf(nil, "%f", res))
-}
-
-func (c CalcController) HandleHistory(w http.ResponseWriter, r *http.Request) {
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
-
-	uID := r.Header.Get("Authorization")
-
-	if uID == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	actions := c.storage.Get(uID)
-
-	res, err := json.Marshal(actions)
+	err = c.cache.Set(calcAction)
 
 	if err != nil {
-		c.logger.Errorf("calcController.HandleHistory: %v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		c.logger.Errorf("cache.Set: %v", err)
 	}
 
-	w.Header().Add("Content-Type", "application/json")
-	w.Write(res)
+	c.storage.Set(uID, calcAction)
+
+	return &calcAction, nil
 }
 
-func (c CalcController) prepareNums(input string) ([]float64, error) {
+func (c calcController) History(uID string) []models.CalcAction {
+	return c.storage.Get(uID)
+}
+
+func (c calcController) prepareNums(input string) ([]float64, error) {
 	stringedNums := strings.Split(strings.ReplaceAll(input, " ", ""), ",")
 	nums := make([]float64, 0)
 

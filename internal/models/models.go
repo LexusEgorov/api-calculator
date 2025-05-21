@@ -1,16 +1,17 @@
 package models
 
-import "errors"
-
-type CalcAction struct {
-	Input  string
-	Action Action
-	Result float64
+type Input struct {
+	Input string `json:"input"`
 }
 
-type UserRequest struct {
-	uID string
-	CalcAction
+type CalcAction struct {
+	Input  string  `json:"input"`
+	Action Action  `json:"action"`
+	Result float64 `json:"result"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
 }
 
 type Action string
@@ -19,5 +20,3 @@ const (
 	SUM  Action = "SUM"
 	MULT Action = "MULT"
 )
-
-var CacheNotFoundErr = errors.New("not cached")
