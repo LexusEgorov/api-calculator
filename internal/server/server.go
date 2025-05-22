@@ -2,7 +2,9 @@ package echosrv
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
@@ -35,13 +37,15 @@ func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 		handler: handler,
 		logger:  logger,
 		server:  server,
+		port:    port,
 	}
 }
-
 func (s Server) Run() {
-	s.logger.Infof("Server is running on: %d port", s.port)
-	if err := s.server.Start(fmt.Sprintf(":%d", s.port)); err != nil {
-		s.logger.Fatalf("Server starting error: %v", err)
+	s.logger.Infof("Server is running on: localhost:%d", s.port)
+	if err := s.server.Start(fmt.Sprintf("localhost:%d", s.port)); err != nil {
+		if !errors.Is(err, http.ErrServerClosed) {
+			s.logger.Fatalf("Server starting error: %v", err)
+		}
 	}
 }
 

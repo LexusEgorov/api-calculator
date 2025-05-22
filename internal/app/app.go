@@ -38,26 +38,24 @@ func (a App) Run() {
 func (a App) Stop() {
 	a.logger.Info("Stopping app...")
 
-	timeDeadline := time.Second * 5
+	timeDeadline := 5 * time.Second
 	deadline := time.Now().Add(timeDeadline)
 	ctx, cancel := context.WithDeadline(context.Background(), deadline)
-
 	defer cancel()
+
+	doneCh := make(chan error)
 	go func() {
-		if err := a.server.Stop(ctx); err != nil {
-			a.logger.Errorf("Error while stopping server: %v", err)
-		}
+		doneCh <- a.server.Stop(ctx)
 	}()
 
 	select {
-	case <-ctx.Done():
-		if ctx.Err() == context.DeadlineExceeded {
-			a.logger.Warn("App has been stopped by deadline")
-		} else {
-			a.logger.Info("App has been stopped gracefully")
+	case err := <-doneCh:
+		if err != nil {
+			a.logger.Errorf("Error while stopping server: %v", err)
 		}
+		a.logger.Info("App has been stopped gracefully")
 
-	case <-time.After(timeDeadline):
+	case <-ctx.Done():
 		a.logger.Warn("App stopped forced")
 	}
 }
