@@ -1,48 +1,57 @@
-package server
+package echosrv
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 
 	mdw "github.com/LexusEgorov/api-calculator/internal/middleware"
 )
 
 type CalcHandler interface {
-	HandleHistory(w http.ResponseWriter, r *http.Request)
-	HandleSum(w http.ResponseWriter, r *http.Request)
-	HandleMult(w http.ResponseWriter, r *http.Request)
+	HandleHistory(ctx echo.Context) error
+	HandleSum(ctx echo.Context) error
+	HandleMult(ctx echo.Context) error
 }
 
 type Server struct {
 	handler CalcHandler
+	server  *echo.Echo
 	logger  *logrus.Logger
 	port    int
 }
 
 func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 	middleware := mdw.New(logger)
-	server := Server{
+	server := echo.New()
+
+	server.POST("/sum", handler.HandleSum, middleware.WithLogging, middleware.WithAuth)
+	server.POST("/mult", handler.HandleMult, middleware.WithLogging, middleware.WithAuth)
+	server.GET("/history", handler.HandleHistory, middleware.WithLogging, middleware.WithAuth)
+
+	return &Server{
 		handler: handler,
 		logger:  logger,
-		port:    port,
+		server:  server,
 	}
-
-	http.HandleFunc("/sum", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleSum))))
-	http.HandleFunc("/mult", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleMult))))
-	http.HandleFunc("/history", middleware.WithRecover(middleware.WithLogging(middleware.WithAuth(handler.HandleHistory))))
-
-	return &server
 }
 
-func (s Server) Run() error {
-	s.logger.Infof("Server is running on localhost:%d", s.port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), nil)
+func (s Server) Run() {
+	s.logger.Infof("Server is running on: %d port", s.port)
+	if err := s.server.Start(fmt.Sprintf(":%d", s.port)); err != nil {
+		s.logger.Fatalf("Server starting error: %v", err)
+	}
+}
+
+func (s Server) Stop(ctx context.Context) error {
+	s.logger.Info("Stopping server...")
+	err := s.server.Shutdown(ctx)
 
 	if err != nil {
-		return err
+		s.logger.Error(err)
 	}
 
-	return nil
+	return err
 }

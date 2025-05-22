@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/LexusEgorov/api-calculator/internal/models"
+	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type CalcHandler struct {
@@ -22,48 +22,48 @@ func New(logger *logrus.Logger, cache Cacher, storage Storager) *CalcHandler {
 	}
 }
 
-func (c CalcHandler) HandleSum(w http.ResponseWriter, r *http.Request) {
-	uID := r.Header.Get("Authorization")
-	body, err := c.getBody(r.Body)
+func (e CalcHandler) HandleSum(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx)
+		return err
 	}
 
-	res, err := c.controller.Sum(uID, *body)
+	res, err := e.controller.Sum(uID, *body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx)
+		return err
 	}
 
-	c.sendGoodResponse(w, res)
+	return e.sendGoodResponse(ctx, res)
 }
 
-func (c CalcHandler) HandleMult(w http.ResponseWriter, r *http.Request) {
-	uID := r.Header.Get("Authorization")
-	body, err := c.getBody(r.Body)
+func (e CalcHandler) HandleMult(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx)
+		return err
 	}
 
-	res, err := c.controller.Mult(uID, *body)
+	res, err := e.controller.Mult(uID, *body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx)
+		return err
 	}
 
-	c.sendGoodResponse(w, res)
+	return e.sendGoodResponse(ctx, res)
 }
 
-func (c CalcHandler) HandleHistory(w http.ResponseWriter, r *http.Request) {
-	uID := r.Header.Get("Authorization")
+func (e CalcHandler) HandleHistory(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
 
-	c.sendGoodResponse(w, c.controller.History(uID))
+	return e.sendGoodResponse(ctx, e.controller.History(uID))
 }
 
 func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
@@ -93,42 +93,10 @@ func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
 	return &inputNums, nil
 }
 
-func (c CalcHandler) sendBadResponse(w http.ResponseWriter, err error) {
-	c.logger.Errorf("badResponse: %v", err)
-	body, err := json.Marshal(models.ErrorResponse{
-		Error: err.Error(),
-	})
-
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
-		c.sendInternalResponse(w)
-		return
-	}
-
-	w.WriteHeader(http.StatusBadRequest)
-	_, err = w.Write(body)
-
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
-	}
+func (e CalcHandler) sendBadResponse(ctx echo.Context) {
+	ctx.Response().WriteHeader(echo.ErrBadRequest.Code)
 }
 
-func (c CalcHandler) sendInternalResponse(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusInternalServerError)
-}
-
-func (c CalcHandler) sendGoodResponse(w http.ResponseWriter, body interface{}) {
-	res, err := json.Marshal(body)
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendGoodResponse: %v", err)
-		c.sendInternalResponse(w)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-	_, err = w.Write(res)
-
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
-	}
+func (e CalcHandler) sendGoodResponse(ctx echo.Context, body any) error {
+	return ctx.JSON(http.StatusOK, body)
 }
