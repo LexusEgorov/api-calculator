@@ -1,0 +1,117 @@
+basePath: /
+definitions:
+  models.Action:
+    enum:
+    - SUM
+    - MULT
+    type: string
+    x-enum-varnames:
+    - SUM
+    - MULT
+  models.CalcAction:
+    properties:
+      action:
+        $ref: '#/definitions/models.Action'
+      input:
+        type: string
+      result:
+        type: number
+    type: object
+  models.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: Calculator which works through the API
+  title: API Calculator
+  version: "1.0"
+paths:
+  /history:
+    get:
+      parameters:
+      - description: User id
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CalcAction'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Show history
+      tags:
+      - history
+  /mult:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User id
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CalcAction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Mult numbers from request's body
+      tags:
+      - mult
+  /sum:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User id
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CalcAction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Sum numbers from request's body
+      tags:
+      - sum
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

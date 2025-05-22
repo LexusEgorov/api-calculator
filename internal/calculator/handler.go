@@ -22,6 +22,16 @@ func New(logger *logrus.Logger, cache Cacher, storage Storager) *CalcHandler {
 	}
 }
 
+// HandleSum godoc
+// @Summary      Sum numbers from request's body
+// @Tags         sum
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {object} models.CalcAction
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /sum [post]
 func (e CalcHandler) HandleSum(ctx echo.Context) error {
 	uID := ctx.Request().Header.Get("Authorization")
 	body, err := e.getBody(ctx.Request().Body)
@@ -41,6 +51,16 @@ func (e CalcHandler) HandleSum(ctx echo.Context) error {
 	return e.sendGoodResponse(ctx, res)
 }
 
+// HandleMult godoc
+// @Summary      Mult numbers from request's body
+// @Tags         mult
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {object} models.CalcAction
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /mult [post]
 func (e CalcHandler) HandleMult(ctx echo.Context) error {
 	uID := ctx.Request().Header.Get("Authorization")
 	body, err := e.getBody(ctx.Request().Body)
@@ -60,6 +80,14 @@ func (e CalcHandler) HandleMult(ctx echo.Context) error {
 	return e.sendGoodResponse(ctx, res)
 }
 
+// HandleHistory godoc
+// @Summary      Show history
+// @Tags         history
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {array} models.CalcAction
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /history [get]
 func (e CalcHandler) HandleHistory(ctx echo.Context) error {
 	uID := ctx.Request().Header.Get("Authorization")
 

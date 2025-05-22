@@ -8,6 +8,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
+	echoSwagger "github.com/swaggo/echo-swagger"
 
 	mdw "github.com/LexusEgorov/api-calculator/internal/middleware"
 )
@@ -32,6 +33,8 @@ func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 	server.POST("/sum", handler.HandleSum, middleware.WithLogging, middleware.WithAuth)
 	server.POST("/mult", handler.HandleMult, middleware.WithLogging, middleware.WithAuth)
 	server.GET("/history", handler.HandleHistory, middleware.WithLogging, middleware.WithAuth)
+
+	server.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	return &Server{
 		handler: handler,
