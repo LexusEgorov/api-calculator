@@ -17,6 +17,15 @@ type ErrorResponse struct {
 type Action string
 
 const (
-	SUM  Action = "SUM"
-	MULT Action = "MULT"
+	MULT           Action = "MULT"
+	SUM            Action = "SUM"
+	CALC           Action = "CALC"
+	NOT_OP_RANK           = -1
+	OPENING_BRAKE         = "("
+	CLOSING_BRAKE         = ")"
+	OPERATION_SUM         = "+"
+	OPERATION_SUB         = "-"
+	OPERATION_MULT        = "*"
+	OPERATION_DIV         = "/"
+	OPERATION_POW         = "^"
 )

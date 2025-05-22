@@ -7,6 +7,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/LexusEgorov/api-calculator/internal/clevercalc"
 	"github.com/LexusEgorov/api-calculator/internal/models"
 )
 
@@ -23,6 +24,7 @@ type Storager interface {
 type calcController struct {
 	cache   Cacher
 	storage Storager
+	calc    *clevercalc.Calculator
 	logger  *logrus.Logger
 }
 
@@ -31,6 +33,7 @@ func newController(logger *logrus.Logger, cache Cacher, storage Storager) calcCo
 		cache:   cache,
 		storage: storage,
 		logger:  logger,
+		calc:    clevercalc.New(),
 	}
 }
 
@@ -90,6 +93,38 @@ func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction
 	calcAction := models.CalcAction{
 		Input:  input.Input,
 		Action: models.MULT,
+		Result: res,
+	}
+
+	err = c.cache.Set(calcAction)
+
+	if err != nil {
+		c.logger.Errorf("cache.Set: %v", err)
+	}
+
+	c.storage.Set(uID, calcAction)
+
+	return &calcAction, nil
+}
+
+func (c calcController) Calculate(uID string, input models.Input) (*models.CalcAction, error) {
+	cached, err := c.cache.Get(input.Input, models.CALC)
+
+	if err == nil {
+		c.storage.Set(uID, cached)
+
+		return &cached, nil
+	}
+
+	res, err := c.calc.Compute(input.Input)
+
+	if err != nil {
+		return nil, err
+	}
+
+	calcAction := models.CalcAction{
+		Input:  input.Input,
+		Action: models.CALC,
 		Result: res,
 	}
 

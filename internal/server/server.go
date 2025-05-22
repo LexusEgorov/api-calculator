@@ -17,6 +17,7 @@ type CalcHandler interface {
 	HandleHistory(ctx echo.Context) error
 	HandleSum(ctx echo.Context) error
 	HandleMult(ctx echo.Context) error
+	HandleCalculate(ctx echo.Context) error
 }
 
 type Server struct {
@@ -32,6 +33,7 @@ func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 
 	server.POST("/sum", handler.HandleSum, middleware.WithLogging, middleware.WithAuth)
 	server.POST("/mult", handler.HandleMult, middleware.WithLogging, middleware.WithAuth)
+	server.POST("/calc", handler.HandleCalculate, middleware.WithLogging, middleware.WithAuth)
 	server.GET("/history", handler.HandleHistory, middleware.WithLogging, middleware.WithAuth)
 
 	server.GET("/swagger/*", echoSwagger.WrapHandler)

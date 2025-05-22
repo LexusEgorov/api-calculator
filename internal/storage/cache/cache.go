@@ -18,6 +18,7 @@ func New() *Cache {
 	cacheMap := make(cacheMap)
 	cacheMap[models.MULT] = make(actionsMap)
 	cacheMap[models.SUM] = make(actionsMap)
+	cacheMap[models.CALC] = make(actionsMap)
 
 	return &Cache{
 		cache: cacheMap,

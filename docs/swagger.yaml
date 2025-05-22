@@ -2,12 +2,14 @@ basePath: /
 definitions:
   models.Action:
     enum:
-    - SUM
     - MULT
+    - SUM
+    - CALC
     type: string
     x-enum-varnames:
-    - SUM
     - MULT
+    - SUM
+    - CALC
   models.CalcAction:
     properties:
       action:
@@ -29,6 +31,34 @@ info:
   title: API Calculator
   version: "1.0"
 paths:
+  /calc:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User id
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CalcAction'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.ErrorResponse'
+      summary: Calculating completed math expression
+      tags:
+      - calculate
   /history:
     get:
       parameters:

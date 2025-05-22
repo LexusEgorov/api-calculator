@@ -15,6 +15,49 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/calc": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "calculate"
+                ],
+                "summary": "Calculating completed math expression",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User id",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CalcAction"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/history": {
             "get": {
                 "produces": [
@@ -143,12 +186,14 @@ const docTemplate = `{
         "models.Action": {
             "type": "string",
             "enum": [
+                "MULT",
                 "SUM",
-                "MULT"
+                "CALC"
             ],
             "x-enum-varnames": [
+                "MULT",
                 "SUM",
-                "MULT"
+                "CALC"
             ]
         },
         "models.CalcAction": {

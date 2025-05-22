@@ -80,6 +80,35 @@ func (e CalcHandler) HandleMult(ctx echo.Context) error {
 	return e.sendGoodResponse(ctx, res)
 }
 
+// HandleCalculate godoc
+// @Summary      Calculating completed math expression
+// @Tags         calculate
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {object} models.CalcAction
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /calc [post]
+func (e CalcHandler) HandleCalculate(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+	body, err := e.getBody(ctx.Request().Body)
+
+	if err != nil {
+		e.sendBadResponse(ctx)
+		return err
+	}
+
+	res, err := e.controller.Calculate(uID, *body)
+
+	if err != nil {
+		e.sendBadResponse(ctx)
+		return err
+	}
+
+	return e.sendGoodResponse(ctx, res)
+}
+
 // HandleHistory godoc
 // @Summary      Show history
 // @Tags         history
