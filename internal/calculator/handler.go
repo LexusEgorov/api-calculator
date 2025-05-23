@@ -37,14 +37,14 @@ func (e CalcHandler) HandleSum(ctx echo.Context) error {
 	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		e.sendBadResponse(ctx)
+		e.sendBadResponse(ctx, err)
 		return err
 	}
 
 	res, err := e.controller.Sum(uID, *body)
 
 	if err != nil {
-		e.sendBadResponse(ctx)
+		e.sendBadResponse(ctx, err)
 		return err
 	}
 
@@ -66,14 +66,14 @@ func (e CalcHandler) HandleMult(ctx echo.Context) error {
 	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		e.sendBadResponse(ctx)
+		e.sendBadResponse(ctx, err)
 		return err
 	}
 
 	res, err := e.controller.Mult(uID, *body)
 
 	if err != nil {
-		e.sendBadResponse(ctx)
+		e.sendBadResponse(ctx, err)
 		return err
 	}
 
@@ -95,14 +95,14 @@ func (e CalcHandler) HandleCalculate(ctx echo.Context) error {
 	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		e.sendBadResponse(ctx)
+		e.sendBadResponse(ctx, err)
 		return err
 	}
 
 	res, err := e.controller.Calculate(uID, *body)
 
 	if err != nil {
-		e.sendBadResponse(ctx)
+		e.sendBadResponse(ctx, err)
 		return err
 	}
 
@@ -150,8 +150,12 @@ func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
 	return &inputNums, nil
 }
 
-func (e CalcHandler) sendBadResponse(ctx echo.Context) {
-	ctx.Response().WriteHeader(echo.ErrBadRequest.Code)
+func (e CalcHandler) sendBadResponse(ctx echo.Context, err error) {
+	badResponse := models.ErrorResponse{
+		Error: err.Error(),
+	}
+
+	ctx.JSON(echo.ErrBadRequest.Code, badResponse)
 }
 
 func (e CalcHandler) sendGoodResponse(ctx echo.Context, body any) error {

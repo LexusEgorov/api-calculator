@@ -31,10 +31,12 @@ func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 	middleware := mdw.New(logger)
 	server := echo.New()
 
-	server.POST("/sum", handler.HandleSum, middleware.WithLogging, middleware.WithAuth)
-	server.POST("/mult", handler.HandleMult, middleware.WithLogging, middleware.WithAuth)
-	server.POST("/calc", handler.HandleCalculate, middleware.WithLogging, middleware.WithAuth)
-	server.GET("/history", handler.HandleHistory, middleware.WithLogging, middleware.WithAuth)
+	server.Use(middleware.WithRecover, middleware.WithLogging, middleware.WithAuth)
+
+	server.POST("/sum", handler.HandleSum)
+	server.POST("/mult", handler.HandleMult)
+	server.POST("/calc", handler.HandleCalculate)
+	server.GET("/history", handler.HandleHistory)
 
 	server.GET("/swagger/*", echoSwagger.WrapHandler)
 

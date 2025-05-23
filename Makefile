@@ -6,6 +6,8 @@ lint:
 	golangci-lint run
 test:
 	go test ./...
+coverage:
+	go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
 build:
 	docker build -t $(IMAGE_NAME) .
 local:

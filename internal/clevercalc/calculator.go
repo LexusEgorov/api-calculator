@@ -16,10 +16,11 @@ type Calculator struct {
 	logger      *logrus.Logger
 }
 
-func New() *Calculator {
+func New(logger *logrus.Logger) *Calculator {
 	return &Calculator{
 		priorityMap: newPriority(),
 		parser:      newParser(),
+		logger:      logger,
 	}
 }
 

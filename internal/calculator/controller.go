@@ -33,7 +33,7 @@ func newController(logger *logrus.Logger, cache Cacher, storage Storager) calcCo
 		cache:   cache,
 		storage: storage,
 		logger:  logger,
-		calc:    clevercalc.New(),
+		calc:    clevercalc.New(logger),
 	}
 }
 
