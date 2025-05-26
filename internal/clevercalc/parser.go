@@ -7,7 +7,8 @@ import (
 	"github.com/LexusEgorov/api-calculator/internal/models"
 )
 
-var operations = []string{
+// слайс для разбивки входной строки для обработки кейсов X-N (X операция, N число)
+var operationsSplit = []string{
 	models.OPENING_BRAKE,
 	models.OPERATION_DIV,
 	models.OPERATION_SUM,
@@ -110,7 +111,7 @@ func (p parser) prepare(input string) string {
 	input = removeSpaces(input)
 
 	//Подготавливаем отрицательные числа
-	for _, separator := range operations {
+	for _, separator := range operationsSplit {
 		tmp := strings.Split(input, separator)
 		for i, part := range tmp {
 			tmp[i] = p.prepareSimplePart(part)
