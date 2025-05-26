@@ -5,6 +5,7 @@ import (
 	"flag"
 	"os"
 
+	"github.com/LexusEgorov/api-calculator/internal/models"
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
@@ -32,6 +33,10 @@ func New() (*Config, error) {
 
 	if err = cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		return nil, err
+	}
+
+	if cfg.Server.Port <= 0 {
+		return nil, models.ErrBadConfigPort
 	}
 
 	return &cfg, nil
