@@ -3,6 +3,7 @@ package echomiddleware
 import (
 	"time"
 
+	"github.com/LexusEgorov/api-calculator/internal/models"
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -37,7 +38,10 @@ func (c calcMiddleware) WithAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		uID := ctx.Request().Header.Get("Authorization")
 
 		if uID == "" {
-			ctx.Response().WriteHeader(echo.ErrUnauthorized.Code)
+			ctx.JSON(echo.ErrUnauthorized.Code, models.ErrorResponse{
+				Error: "user not found",
+			})
+
 			return echo.ErrUnauthorized
 		}
 
