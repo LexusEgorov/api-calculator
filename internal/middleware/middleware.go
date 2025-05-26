@@ -21,7 +21,12 @@ func New(logger *logrus.Logger) *calcMiddleware {
 func (c calcMiddleware) WithLogging(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(ctx echo.Context) error {
 		timeStart := time.Now()
-		next(ctx)
+		err := next(ctx)
+
+		if err != nil {
+			c.logger.Errorf("middleware.WithLogging: %v", err)
+		}
+
 		code := ctx.Response().Status
 		if code >= 400 && code <= 599 {
 			c.logger.Errorf("%d %s %s %s", code, ctx.Request().Method, ctx.Request().URL, time.Since(timeStart))
@@ -29,7 +34,7 @@ func (c calcMiddleware) WithLogging(next echo.HandlerFunc) echo.HandlerFunc {
 			c.logger.Infof("%d %s %s %s", code, ctx.Request().Method, ctx.Request().URL, time.Since(timeStart))
 		}
 
-		return nil
+		return err
 	}
 }
 
