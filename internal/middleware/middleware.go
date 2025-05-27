@@ -1,6 +1,7 @@
 package echomiddleware
 
 import (
+	"net/http"
 	"time"
 
 	"github.com/LexusEgorov/api-calculator/internal/models"
@@ -28,7 +29,7 @@ func (c calcMiddleware) WithLogging(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		code := ctx.Response().Status
-		if code >= 400 && code <= 599 {
+		if code >= http.StatusBadRequest && code <= http.StatusNetworkAuthenticationRequired {
 			c.logger.Errorf("%d %s %s %s", code, ctx.Request().Method, ctx.Request().URL, time.Since(timeStart))
 		} else {
 			c.logger.Infof("%d %s %s %s", code, ctx.Request().Method, ctx.Request().URL, time.Since(timeStart))
