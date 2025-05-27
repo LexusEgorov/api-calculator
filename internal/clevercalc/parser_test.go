@@ -93,15 +93,15 @@ func TestAddNum(t *testing.T) {
 func TestGetActions(t *testing.T) {
 	mockStack := Stack{}
 
-	mockStack.Push(models.OPERATION_SUM)
-	mockStack.Push(models.OPERATION_POW)
-	mockStack.Push(models.OPERATION_MULT)
-	mockStack.Push(models.OPERATION_DIV)
+	mockStack.Push(models.OperationSum)
+	mockStack.Push(models.OperationPow)
+	mockStack.Push(models.OperationMult)
+	mockStack.Push(models.OperationDiv)
 
 	expected := []string{
-		models.OPERATION_DIV,
-		models.OPERATION_MULT,
-		models.OPERATION_POW,
+		models.OperationDiv,
+		models.OperationMult,
+		models.OperationPow,
 	}
 
 	res := parserTest.getActions(&mockStack, 2)

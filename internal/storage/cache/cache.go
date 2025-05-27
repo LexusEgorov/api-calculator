@@ -16,9 +16,9 @@ type Cache struct {
 
 func New() *Cache {
 	cacheMap := make(cacheMap)
-	cacheMap[models.MULT] = make(actionsMap)
-	cacheMap[models.SUM] = make(actionsMap)
-	cacheMap[models.CALC] = make(actionsMap)
+	cacheMap[models.Mult] = make(actionsMap)
+	cacheMap[models.Sum] = make(actionsMap)
+	cacheMap[models.Calc] = make(actionsMap)
 
 	return &Cache{
 		cache: cacheMap,

@@ -28,7 +28,7 @@ func (p priority) Get(operator string) int {
 	rank, isFound := p.ranks[operator]
 
 	if !isFound {
-		return models.NOT_OP_RANK
+		return models.NotOpRank
 	}
 
 	return rank

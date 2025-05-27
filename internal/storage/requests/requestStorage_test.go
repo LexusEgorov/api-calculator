@@ -12,7 +12,7 @@ func TestSetGet(t *testing.T) {
 	input := "1, 1"
 	action := models.CalcAction{
 		Input:  input,
-		Action: models.SUM,
+		Action: models.Sum,
 		Result: 2,
 	}
 

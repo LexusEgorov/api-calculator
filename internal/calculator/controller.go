@@ -38,7 +38,7 @@ func newController(logger *logrus.Logger, cache Cacher, storage Storager) calcCo
 }
 
 func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction, error) {
-	cached, err := c.cache.Get(input.Input, models.SUM)
+	cached, err := c.cache.Get(input.Input, models.Sum)
 
 	if err == nil {
 		c.storage.Set(uID, cached)
@@ -57,7 +57,7 @@ func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction,
 
 	calcAction := models.CalcAction{
 		Input:  input.Input,
-		Action: models.SUM,
+		Action: models.Sum,
 		Result: res,
 	}
 
@@ -73,7 +73,7 @@ func (c calcController) Sum(uID string, input models.Input) (*models.CalcAction,
 }
 
 func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction, error) {
-	cached, err := c.cache.Get(input.Input, models.MULT)
+	cached, err := c.cache.Get(input.Input, models.Mult)
 
 	if err == nil {
 		c.storage.Set(uID, cached)
@@ -92,7 +92,7 @@ func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction
 
 	calcAction := models.CalcAction{
 		Input:  input.Input,
-		Action: models.MULT,
+		Action: models.Mult,
 		Result: res,
 	}
 
@@ -108,7 +108,7 @@ func (c calcController) Mult(uID string, input models.Input) (*models.CalcAction
 }
 
 func (c calcController) Calculate(uID string, input models.Input) (*models.CalcAction, error) {
-	cached, err := c.cache.Get(input.Input, models.CALC)
+	cached, err := c.cache.Get(input.Input, models.Calc)
 
 	if err == nil {
 		c.storage.Set(uID, cached)
@@ -124,7 +124,7 @@ func (c calcController) Calculate(uID string, input models.Input) (*models.CalcA
 
 	calcAction := models.CalcAction{
 		Input:  input.Input,
-		Action: models.CALC,
+		Action: models.Calc,
 		Result: res,
 	}
 

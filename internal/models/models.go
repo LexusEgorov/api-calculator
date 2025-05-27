@@ -17,15 +17,15 @@ type ErrorResponse struct {
 type Action string
 
 const (
-	MULT           Action = "MULT"
-	SUM            Action = "SUM"
-	CALC           Action = "CALC"
-	NOT_OP_RANK           = -1
-	OPENING_BRAKE         = "("
-	CLOSING_BRAKE         = ")"
-	OPERATION_SUM         = "+"
-	OPERATION_SUB         = "-"
-	OPERATION_MULT        = "*"
-	OPERATION_DIV         = "/"
-	OPERATION_POW         = "^"
+	Mult          Action = "MULT"
+	Sum           Action = "SUM"
+	Calc          Action = "CALC"
+	NotOpRank            = -1
+	OpeningBrake         = "("
+	ClosingBrake         = ")"
+	OperationSum         = "+"
+	OperationSub         = "-"
+	OperationMult        = "*"
+	OperationDiv         = "/"
+	OperationPow         = "^"
 )

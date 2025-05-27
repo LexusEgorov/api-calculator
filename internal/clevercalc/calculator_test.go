@@ -105,7 +105,7 @@ func TestComputeFn(t *testing.T) {
 			Input: Input{
 				a:         4,
 				b:         2,
-				operation: models.OPERATION_DIV,
+				operation: models.OperationDiv,
 			},
 			Expected: 2,
 		},
@@ -113,7 +113,7 @@ func TestComputeFn(t *testing.T) {
 			Input: Input{
 				a:         4,
 				b:         2,
-				operation: models.OPERATION_POW,
+				operation: models.OperationPow,
 			},
 			Expected: 16,
 		},
@@ -121,7 +121,7 @@ func TestComputeFn(t *testing.T) {
 			Input: Input{
 				a:         4,
 				b:         2,
-				operation: models.OPERATION_SUM,
+				operation: models.OperationSum,
 			},
 			Expected: 6,
 		},
@@ -129,7 +129,7 @@ func TestComputeFn(t *testing.T) {
 			Input: Input{
 				a:         4,
 				b:         2,
-				operation: models.OPERATION_SUB,
+				operation: models.OperationSub,
 			},
 			Expected: 2,
 		},
@@ -137,7 +137,7 @@ func TestComputeFn(t *testing.T) {
 			Input: Input{
 				a:         4,
 				b:         2,
-				operation: models.OPERATION_MULT,
+				operation: models.OperationMult,
 			},
 			Expected: 8,
 		},
@@ -157,7 +157,7 @@ func TestComputeFn(t *testing.T) {
 }
 
 func TestComputeFnError(t *testing.T) {
-	_, err := compute(2, 0, models.OPERATION_DIV)
+	_, err := compute(2, 0, models.OperationDiv)
 
 	if err == nil {
 		t.Error("expected error")

@@ -9,11 +9,11 @@ import (
 
 // слайс для разбивки входной строки для обработки кейсов X-N (X операция, N число)
 var operationsSplit = []string{
-	models.OPENING_BRAKE,
-	models.OPERATION_DIV,
-	models.OPERATION_SUM,
-	models.OPERATION_MULT,
-	models.OPERATION_POW,
+	models.OpeningBrake,
+	models.OperationDiv,
+	models.OperationSum,
+	models.OperationMult,
+	models.OperationPow,
 }
 
 type parser struct {
@@ -37,13 +37,13 @@ func (p parser) parse(input string) ([]string, error) {
 
 	for _, symb := range input {
 		curr := string(symb)
-		if curr == models.OPENING_BRAKE {
+		if curr == models.OpeningBrake {
 			actionsStack.Push(curr)
 			continue
 		}
 
 		//Достаем все действия до открывающей скобки
-		if curr == models.CLOSING_BRAKE {
+		if curr == models.ClosingBrake {
 			addNum(&result, &current)
 			for {
 				action, err := actionsStack.Pop()
@@ -52,7 +52,7 @@ func (p parser) parse(input string) ([]string, error) {
 					return nil, models.ErrBadInput
 				}
 
-				if action == models.OPENING_BRAKE {
+				if action == models.OpeningBrake {
 					break
 				}
 
@@ -65,7 +65,7 @@ func (p parser) parse(input string) ([]string, error) {
 		rank := p.priorityMap.Get(curr)
 
 		//Если true, то текущий символ точно не действие
-		if rank == models.NOT_OP_RANK {
+		if rank == models.NotOpRank {
 			current += string(curr)
 			continue
 		}
@@ -91,7 +91,7 @@ func (p parser) parse(input string) ([]string, error) {
 	for {
 		action, err := actionsStack.Pop()
 
-		if action == models.OPENING_BRAKE {
+		if action == models.OpeningBrake {
 			return nil, models.ErrBadInput
 		}
 
@@ -129,7 +129,7 @@ func (p parser) prepareSimplePart(part string) string {
 		return part
 	}
 
-	if string(part[0]) != models.OPERATION_SUB {
+	if string(part[0]) != models.OperationSub {
 		return part
 	}
 
@@ -138,7 +138,7 @@ func (p parser) prepareSimplePart(part string) string {
 		return "0-"
 	}
 
-	if string(part[1]) == models.OPENING_BRAKE {
+	if string(part[1]) == models.OpeningBrake {
 		return fmt.Sprintf("(0%s)", part)
 	}
 
@@ -147,7 +147,7 @@ func (p parser) prepareSimplePart(part string) string {
 	for i := 1; i < len(part); i++ {
 		stringedSymb := string(part[i])
 
-		if p.priorityMap.Get(stringedSymb) == models.NOT_OP_RANK {
+		if p.priorityMap.Get(stringedSymb) == models.NotOpRank {
 			current += stringedSymb
 			continue
 		}
@@ -168,7 +168,7 @@ func (p parser) getActions(from *Stack, rank int) []string {
 	for {
 		nextAction, err := from.Peek()
 
-		if err != nil || nextAction == models.OPENING_BRAKE || p.priorityMap.Get(nextAction) < rank {
+		if err != nil || nextAction == models.OpeningBrake || p.priorityMap.Get(nextAction) < rank {
 			return actions
 		}
 

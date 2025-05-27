@@ -47,7 +47,7 @@ func (c Calculator) compute(parsed []string) (float64, error) {
 
 	for _, value := range parsed {
 		//Кладем число в стек
-		if c.priorityMap.Get(value) == models.NOT_OP_RANK {
+		if c.priorityMap.Get(value) == models.NotOpRank {
 			numsStack.Push(value)
 			continue
 		}
@@ -92,19 +92,19 @@ func (c Calculator) compute(parsed []string) (float64, error) {
 // математика происходит тут
 func compute(a, b float64, operation string) (float64, error) {
 	switch operation {
-	case models.OPERATION_SUM:
+	case models.OperationSum:
 		return a + b, nil
-	case models.OPERATION_SUB:
+	case models.OperationSub:
 		return a - b, nil
-	case models.OPERATION_MULT:
+	case models.OperationMult:
 		return a * b, nil
-	case models.OPERATION_DIV:
+	case models.OperationDiv:
 		if b == 0 {
 			return 0, models.ErrBadDivide
 		}
 
 		return a / b, nil
-	case models.OPERATION_POW:
+	case models.OperationPow:
 		return math.Pow(a, b), nil
 	default:
 		return 0, models.NewErrUnknownAction(operation)

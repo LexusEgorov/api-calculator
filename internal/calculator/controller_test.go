@@ -36,7 +36,7 @@ func TestControllerSum(t *testing.T) {
 
 	expected := models.CalcAction{
 		Input:  input.Input,
-		Action: models.SUM,
+		Action: models.Sum,
 		Result: 2,
 	}
 
@@ -68,7 +68,7 @@ func TestControllerMult(t *testing.T) {
 
 	expected := models.CalcAction{
 		Input:  input.Input,
-		Action: models.MULT,
+		Action: models.Mult,
 		Result: 1,
 	}
 
@@ -100,7 +100,7 @@ func TestControllerCalculate(t *testing.T) {
 
 	expected := models.CalcAction{
 		Input:  input.Input,
-		Action: models.CALC,
+		Action: models.Calc,
 		Result: 20,
 	}
 
