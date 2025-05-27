@@ -38,9 +38,8 @@ func (a App) Run() {
 func (a App) Stop() {
 	a.logger.Info("Stopping app...")
 
-	timeDeadline := 5 * time.Second
-	deadline := time.Now().Add(timeDeadline)
-	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	timeout := 5 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
 	doneCh := make(chan error)
