@@ -1,5 +1,7 @@
 IMAGE_NAME=api-calculator
 
+apidoc:
+	swag init -g cmd/calculator/main.go
 fmt:
 	go fmt ./...
 lint:
