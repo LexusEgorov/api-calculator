@@ -11,6 +11,10 @@ func sumNums(nums ...float64) float64 {
 }
 
 func multNums(nums ...float64) float64 {
+	if len(nums) == 0 {
+		return 0
+	}
+
 	var mult float64 = 1
 
 	for _, num := range nums {

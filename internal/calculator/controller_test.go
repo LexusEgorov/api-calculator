@@ -20,32 +20,65 @@ func (m mockCacher) Set(action models.CalcAction) error {
 type mockStorager struct{}
 
 func (m mockStorager) Get(uID string) []models.CalcAction {
-	return make([]models.CalcAction, 0)
+	return history
 }
 
 func (m mockStorager) Set(uID string, action models.CalcAction) {}
 
-var controller = newController(logrus.New(), mockCacher{}, mockStorager{})
+var history = make([]models.CalcAction, 0)
+var cache = mockCacher{}
+var storage = mockStorager{}
+var controller = newController(logrus.New(), cache, storage)
+
+type Test struct {
+	Input    models.Input
+	Expected models.CalcAction
+}
 
 func TestControllerSum(t *testing.T) {
-	input := models.Input{
-		Input: "1, 1",
+	tests := []Test{
+		{
+			Input: models.Input{
+				Input: "1, 1",
+			},
+			Expected: models.CalcAction{
+				Input:  "1, 1",
+				Action: models.Sum,
+				Result: 2,
+			},
+		},
+		{
+			Input: models.Input{
+				Input: "-5, -2",
+			},
+			Expected: models.CalcAction{
+				Input:  "-5, -2",
+				Action: models.Sum,
+				Result: -7,
+			},
+		},
+		{
+			Input: models.Input{
+				Input: "12345648, -8454515, 1884686",
+			},
+			Expected: models.CalcAction{
+				Input:  "12345648, -8454515, 1884686",
+				Action: models.Sum,
+				Result: 5775819,
+			},
+		},
 	}
 
-	res, err := controller.Sum("123", input)
+	for i, test := range tests {
+		res, err := controller.Sum("123", test.Input)
 
-	expected := models.CalcAction{
-		Input:  input.Input,
-		Action: models.Sum,
-		Result: 2,
-	}
+		if err != nil {
+			t.Errorf("Got error: %v", err)
+		}
 
-	if err != nil {
-		t.Errorf("Got error: %v", err)
-	}
-
-	if *res != expected {
-		t.Errorf("Not equal!\nGot: %v\nExpected: %v\n", *res, expected)
+		if *res != test.Expected {
+			t.Errorf("Case #%d: Not equal!\nGot: %v\nExpected: %v\n", i+1, *res, test.Expected)
+		}
 	}
 }
 
@@ -61,23 +94,49 @@ func TestControllerSumWithErr(t *testing.T) {
 }
 
 func TestControllerMult(t *testing.T) {
-	input := models.Input{
-		Input: "1, 1",
+	tests := []Test{
+		{
+			Input: models.Input{
+				Input: "1, 1",
+			},
+			Expected: models.CalcAction{
+				Input:  "1, 1",
+				Action: models.Mult,
+				Result: 1,
+			},
+		},
+		{
+			Input: models.Input{
+				Input: "-5, -2",
+			},
+			Expected: models.CalcAction{
+				Input:  "-5, -2",
+				Action: models.Mult,
+				Result: 10,
+			},
+		},
+		{
+			Input: models.Input{
+				Input: "5, 4, 0",
+			},
+			Expected: models.CalcAction{
+				Input:  "5, 4, 0",
+				Action: models.Mult,
+				Result: 0,
+			},
+		},
 	}
-	res, err := controller.Mult("123", input)
 
-	expected := models.CalcAction{
-		Input:  input.Input,
-		Action: models.Mult,
-		Result: 1,
-	}
+	for i, test := range tests {
+		res, err := controller.Mult("123", test.Input)
 
-	if err != nil {
-		t.Errorf("Got error: %v", err)
-	}
+		if err != nil {
+			t.Errorf("Got error: %v", err)
+		}
 
-	if *res != expected {
-		t.Errorf("Not equal!\nGot: %v\nExpected: %v\n", *res, expected)
+		if *res != test.Expected {
+			t.Errorf("Case #%d: Not equal!\nGot: %v\nExpected: %v\n", i+1, *res, test.Expected)
+		}
 	}
 }
 
@@ -122,4 +181,51 @@ func TestControllerCalculateWithErr(t *testing.T) {
 	if err == nil {
 		t.Error("Err nil, but expected not!")
 	}
+}
+
+type HistoryTest struct {
+	history []models.CalcAction
+}
+
+func TestControllerHistory(t *testing.T) {
+	tests := []HistoryTest{
+		{
+			history: make([]models.CalcAction, 0),
+		},
+		{
+			history: []models.CalcAction{
+				{
+					Input:  "1, 1",
+					Action: models.Sum,
+					Result: 2,
+				},
+			},
+		},
+	}
+
+	for i, test := range tests {
+		history = test.history
+		res := controller.History("")
+
+		if !isEqual(res, test.history) {
+			t.Errorf("test #%d: not equal! got: %v expected: %v", i+1, res, test.history)
+		}
+	}
+}
+
+func isEqual(a, b []models.CalcAction) bool {
+	if a == nil && b == nil {
+		return true
+	}
+
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
