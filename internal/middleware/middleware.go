@@ -1,11 +1,11 @@
-package middleware
+package echomiddleware
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
 	"github.com/LexusEgorov/api-calculator/internal/models"
+	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,69 +19,51 @@ func New(logger *logrus.Logger) *calcMiddleware {
 	}
 }
 
-type responseWriter struct {
-	http.ResponseWriter
-	code int
-}
-
-func (rw *responseWriter) WriteHeader(code int) {
-	rw.code = code
-	rw.ResponseWriter.WriteHeader(code)
-}
-
-func (c calcMiddleware) WithLogging(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		rw := &responseWriter{ResponseWriter: w, code: http.StatusOK}
-
+func (c calcMiddleware) WithLogging(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
 		timeStart := time.Now()
-		next.ServeHTTP(rw, r)
-		code := rw.code
+		err := next(ctx)
 
-		if code >= http.StatusBadRequest && code <= http.StatusNetworkAuthenticationRequired {
-			c.logger.Errorf("%d %s %s %s", code, r.Method, r.RequestURI, time.Since(timeStart))
-		} else {
-			c.logger.Infof("%d %s %s %s", code, r.Method, r.RequestURI, time.Since(timeStart))
+		if err != nil {
+			c.logger.Errorf("middleware.WithLogging: %v", err)
 		}
+
+		code := ctx.Response().Status
+		if code >= http.StatusBadRequest && code <= http.StatusNetworkAuthenticationRequired {
+			c.logger.Errorf("%d %s %s %s", code, ctx.Request().Method, ctx.Request().URL, time.Since(timeStart))
+		} else {
+			c.logger.Infof("%d %s %s %s", code, ctx.Request().Method, ctx.Request().URL, time.Since(timeStart))
+		}
+
+		return err
 	}
 }
 
-func (c calcMiddleware) WithAuth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Authorization") == "" {
-			body, err := json.Marshal(models.ErrorResponse{
-				Error: "Header 'Authorization' is required!",
+func (c calcMiddleware) WithAuth(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
+		uID := ctx.Request().Header.Get("Authorization")
+
+		if uID == "" {
+			ctx.JSON(echo.ErrUnauthorized.Code, models.ErrorResponse{
+				Error: "user not found",
 			})
 
-			if err != nil {
-				c.logger.Errorf("middleware.WithAuth: %v", err)
-				w.WriteHeader(http.StatusInternalServerError)
-				return
-			}
-
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusUnauthorized)
-			_, err = w.Write(body)
-
-			if err != nil {
-				c.logger.Errorf("middleware.WithAuth: %v", err)
-			}
-
-			return
+			return echo.ErrUnauthorized
 		}
 
-		next.ServeHTTP(w, r)
+		return next(ctx)
 	}
 }
 
-func (c calcMiddleware) WithRecover(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (c calcMiddleware) WithRecover(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(ctx echo.Context) error {
 		defer func() {
 			if r := recover(); r != nil {
 				c.logger.Errorf("Recovered: %v", r)
-				w.WriteHeader(http.StatusInternalServerError)
+				ctx.Response().WriteHeader(echo.ErrInternalServerError.Code)
 			}
 		}()
 
-		next.ServeHTTP(w, r)
+		return next(ctx)
 	}
 }

@@ -51,6 +51,21 @@ curl --location 'localhost:8080/mult' \
     "result": 2
 }
 
+Полноценный пример:
+
+curl --location 'localhost:8080/calc' \
+--header 'Authorization: 111' \
+--header 'Content-Type: application/json' \
+--data '{
+    "input": "-5*500-(200*2.5)"
+}'
+
+{
+    "input": "-5*500-(200*2.5)",
+    "action": "CALC",
+    "result": -3000
+}
+
 История:
 
 curl --location 'localhost:8080/history' \

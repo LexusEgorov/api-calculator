@@ -5,9 +5,9 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/LexusEgorov/api-calculator/internal/models"
+	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
 type CalcHandler struct {
@@ -22,48 +22,105 @@ func New(logger *logrus.Logger, cache Cacher, storage Storager) *CalcHandler {
 	}
 }
 
-func (c CalcHandler) HandleSum(w http.ResponseWriter, r *http.Request) {
-	uID := r.Header.Get("Authorization")
-	body, err := c.getBody(r.Body)
+// HandleSum godoc
+// @Summary      Sum numbers from request's body
+// @Tags         sum
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {object} models.CalcAction
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /sum [post]
+func (e CalcHandler) HandleSum(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx, err)
+		return err
 	}
 
-	res, err := c.controller.Sum(uID, *body)
+	res, err := e.controller.Sum(uID, *body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx, err)
+		return err
 	}
 
-	c.sendGoodResponse(w, res)
+	return e.sendGoodResponse(ctx, res)
 }
 
-func (c CalcHandler) HandleMult(w http.ResponseWriter, r *http.Request) {
-	uID := r.Header.Get("Authorization")
-	body, err := c.getBody(r.Body)
+// HandleMult godoc
+// @Summary      Mult numbers from request's body
+// @Tags         mult
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {object} models.CalcAction
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /mult [post]
+func (e CalcHandler) HandleMult(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+	body, err := e.getBody(ctx.Request().Body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx, err)
+		return err
 	}
 
-	res, err := c.controller.Mult(uID, *body)
+	res, err := e.controller.Mult(uID, *body)
 
 	if err != nil {
-		c.sendBadResponse(w, err)
-		return
+		e.sendBadResponse(ctx, err)
+		return err
 	}
 
-	c.sendGoodResponse(w, res)
+	return e.sendGoodResponse(ctx, res)
 }
 
-func (c CalcHandler) HandleHistory(w http.ResponseWriter, r *http.Request) {
-	uID := r.Header.Get("Authorization")
+// HandleCalculate godoc
+// @Summary      Calculating completed math expression
+// @Tags         calculate
+// @Accept       json
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {object} models.CalcAction
+// @Failure      400 {object} models.ErrorResponse
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /calc [post]
+func (e CalcHandler) HandleCalculate(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+	body, err := e.getBody(ctx.Request().Body)
 
-	c.sendGoodResponse(w, c.controller.History(uID))
+	if err != nil {
+		e.sendBadResponse(ctx, err)
+		return err
+	}
+
+	res, err := e.controller.Calculate(uID, *body)
+
+	if err != nil {
+		e.sendBadResponse(ctx, err)
+		return err
+	}
+
+	return e.sendGoodResponse(ctx, res)
+}
+
+// HandleHistory godoc
+// @Summary      Show history
+// @Tags         history
+// @Produce      json
+// @Param        Authorization header string true "User id"
+// @Success      200  {array} models.CalcAction
+// @Failure      401 {object} models.ErrorResponse
+// @Router       /history [get]
+func (e CalcHandler) HandleHistory(ctx echo.Context) error {
+	uID := ctx.Request().Header.Get("Authorization")
+
+	return e.sendGoodResponse(ctx, e.controller.History(uID))
 }
 
 func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
@@ -93,42 +150,14 @@ func (c CalcHandler) getBody(body io.ReadCloser) (*models.Input, error) {
 	return &inputNums, nil
 }
 
-func (c CalcHandler) sendBadResponse(w http.ResponseWriter, err error) {
-	c.logger.Errorf("badResponse: %v", err)
-	body, err := json.Marshal(models.ErrorResponse{
+func (e CalcHandler) sendBadResponse(ctx echo.Context, err error) {
+	badResponse := models.ErrorResponse{
 		Error: err.Error(),
-	})
-
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
-		c.sendInternalResponse(w)
-		return
 	}
 
-	w.WriteHeader(http.StatusBadRequest)
-	_, err = w.Write(body)
-
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
-	}
+	ctx.JSON(echo.ErrBadRequest.Code, badResponse)
 }
 
-func (c CalcHandler) sendInternalResponse(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusInternalServerError)
-}
-
-func (c CalcHandler) sendGoodResponse(w http.ResponseWriter, body interface{}) {
-	res, err := json.Marshal(body)
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendGoodResponse: %v", err)
-		c.sendInternalResponse(w)
-		return
-	}
-
-	w.Header().Add("Content-Type", "application/json")
-	_, err = w.Write(res)
-
-	if err != nil {
-		c.logger.Errorf("calcHandler.sendBadResponse: %v", err)
-	}
+func (e CalcHandler) sendGoodResponse(ctx echo.Context, body any) error {
+	return ctx.JSON(http.StatusOK, body)
 }

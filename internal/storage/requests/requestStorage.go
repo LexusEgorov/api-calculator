@@ -22,6 +22,10 @@ func (r *RequestStorage) Get(uID string) []models.CalcAction {
 	requests := r.requests[uID]
 	r.mu.Unlock()
 
+	if requests == nil {
+		return make([]models.CalcAction, 0)
+	}
+
 	return requests
 }
 

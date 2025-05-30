@@ -2,15 +2,26 @@ package main
 
 import (
 	"log"
+	"os"
+	"os/signal"
 
 	"github.com/LexusEgorov/api-calculator/internal/app"
 	"github.com/LexusEgorov/api-calculator/internal/config"
 	"github.com/LexusEgorov/api-calculator/internal/logger"
+
+	_ "github.com/LexusEgorov/api-calculator/docs"
 )
 
-//TODO: Add unit tests
-//TODO: Move to Echo
-//TODO: Add documentation
+// @title           API Calculator
+// @version         1.0
+// @description     Calculator which works through the API
+
+// @host      localhost:8080
+// @BasePath  /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 
 func main() {
 	cfg, err := config.New()
@@ -23,7 +34,12 @@ func main() {
 	log := logger.New(cfg.Env)
 	app := app.New(log, cfg.Server.Port)
 
-	if err := app.Run(); err != nil {
-		log.Fatalf("Can't start application: %v", err)
-	}
+	app.Run()
+
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, os.Interrupt)
+
+	<-stopChan
+	log.Info("Recieved interrupt signal")
+	app.Stop()
 }

@@ -1,6 +1,9 @@
 package app
 
 import (
+	"context"
+	"time"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/LexusEgorov/api-calculator/internal/calculator"
@@ -27,7 +30,31 @@ func New(logger *logrus.Logger, port int) *App {
 	}
 }
 
-func (a App) Run() error {
+func (a App) Run() {
 	a.logger.Info("Starting app...")
-	return a.server.Run()
+	go a.server.Run()
+}
+
+func (a App) Stop() {
+	a.logger.Info("Stopping app...")
+
+	timeout := 5 * time.Second
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	doneCh := make(chan error)
+	go func() {
+		doneCh <- a.server.Stop(ctx)
+	}()
+
+	select {
+	case err := <-doneCh:
+		if err != nil {
+			a.logger.Errorf("Error while stopping server: %v", err)
+		}
+		a.logger.Info("App has been stopped gracefully")
+
+	case <-ctx.Done():
+		a.logger.Warn("App stopped forced")
+	}
 }
