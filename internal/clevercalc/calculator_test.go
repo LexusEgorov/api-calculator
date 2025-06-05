@@ -1,182 +1,440 @@
 package clevercalc
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/LexusEgorov/api-calculator/internal/models"
 	"github.com/sirupsen/logrus"
 )
 
-var logger = logrus.New()
-var calculator = New(logger)
+func Test_getNum(t *testing.T) {
+	testStack := Stack{}
 
-func TestNew(t *testing.T) {
-	calc := Calculator{
-		priorityMap: newPriority(),
-		parser:      newParser(),
-		logger:      logger,
+	type args struct {
+		from *Stack
 	}
-
-	if !reflect.DeepEqual(calc.priorityMap, calculator.priorityMap) {
-		t.Errorf("not equal: got '%v', expected '%v'", calc.priorityMap, calculator.priorityMap)
-	}
-
-	if !reflect.DeepEqual(calc.parser, calculator.parser) {
-		t.Errorf("not equal: got '%v', expected '%v'", calc.parser, calculator.parser)
-	}
-
-	if !reflect.DeepEqual(calc.logger, calculator.logger) {
-		t.Errorf("not equal: got '%v', expected '%v'", calc.logger, calculator.logger)
-	}
-}
-
-func TestCompute(t *testing.T) {
-	var expected float64 = 4
-	input := []string{
-		"2",
-		"2",
-		"+",
-	}
-
-	res, err := calculator.compute(input)
-
-	if err != nil {
-		t.Errorf("got error: %v", err)
-	}
-
-	if res != expected {
-		t.Errorf("not equal: got '%v', expected '%v'", res, expected)
-	}
-}
-
-func TestComputeErr(t *testing.T) {
-	input := []string{
-		"2",
-		"2",
-	}
-
-	_, err := calculator.compute(input)
-
-	if err == nil {
-		t.Error("expected error")
-	}
-}
-
-func TestCalcCompute(t *testing.T) {
-	var expected float64 = 4
-	input := "2+2"
-
-	res, err := calculator.Compute(input)
-
-	if err != nil {
-		t.Errorf("got error: %v", err)
-	}
-
-	if res != expected {
-		t.Errorf("not equal: got '%v', expected '%v'", res, expected)
-	}
-}
-
-func TestCalcComputeErr(t *testing.T) {
-	input := "(2+2"
-
-	_, err := calculator.Compute(input)
-
-	if err == nil {
-		t.Error("expected error")
-	}
-}
-
-type Input struct {
-	a         float64
-	b         float64
-	operation string
-}
-
-type Test struct {
-	Input    Input
-	Expected float64
-}
-
-func TestComputeFn(t *testing.T) {
-	tests := []Test{
+	tests := []struct {
+		name    string
+		args    args
+		init    []string
+		want    float64
+		wantErr bool
+	}{
 		{
-			Input: Input{
-				a:         4,
-				b:         2,
-				operation: models.OperationDiv,
+			name: "regular case",
+			args: args{
+				from: &testStack,
 			},
-			Expected: 2,
+			init: []string{
+				"2",
+				"2",
+			},
+			want:    2,
+			wantErr: false,
 		},
 		{
-			Input: Input{
-				a:         4,
-				b:         2,
-				operation: models.OperationPow,
+			name: "negative number",
+			args: args{
+				from: &testStack,
 			},
-			Expected: 16,
+			init: []string{
+				"2",
+				"-2",
+			},
+			want:    -2,
+			wantErr: false,
 		},
 		{
-			Input: Input{
-				a:         4,
-				b:         2,
+			name: "float number",
+			args: args{
+				from: &testStack,
+			},
+			init: []string{
+				"2",
+				"2.2",
+			},
+			want:    2.2,
+			wantErr: false,
+		},
+		{
+			name: "big number",
+			args: args{
+				from: &testStack,
+			},
+			init: []string{
+				"2",
+				"88888888888888",
+			},
+			want:    88888888888888,
+			wantErr: false,
+		},
+		{
+			name: "small number",
+			args: args{
+				from: &testStack,
+			},
+			init: []string{
+				"2",
+				"0.00000000005",
+			},
+			want:    0.00000000005,
+			wantErr: false,
+		},
+		{
+			name: "empty stack",
+			args: args{
+				from: &testStack,
+			},
+			init:    []string{},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "not number in stack",
+			args: args{
+				from: &testStack,
+			},
+			init: []string{
+				"a",
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.args.from.data = tt.init
+			tt.args.from.size = len(tt.init)
+
+			got, err := getNum(tt.args.from)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getNum() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("getNum() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCalculator_compute(t *testing.T) {
+	loggerTest := logrus.New()
+	calculatorTest := New(loggerTest)
+
+	type args struct {
+		parsed []string
+	}
+	tests := []struct {
+		name    string
+		c       Calculator
+		args    args
+		want    float64
+		wantErr bool
+	}{
+		{
+			name: "simple",
+			c:    *calculatorTest,
+			args: args{
+				parsed: []string{
+					"2",
+					"2",
+					"+",
+				},
+			},
+			want:    4,
+			wantErr: false,
+		},
+		{
+			name: "many actions",
+			c:    *calculatorTest,
+			args: args{
+				parsed: []string{
+					"8",
+					"4",
+					"3",
+					"3",
+					"/",
+					"+",
+					"8",
+					"/",
+					"*",
+					"15",
+					"+",
+				},
+			},
+			want:    20,
+			wantErr: false,
+		},
+		{
+			name: "negative num",
+			c:    *calculatorTest,
+			args: args{
+				parsed: []string{
+					"2",
+					"-",
+				},
+			},
+			want:    -2,
+			wantErr: false,
+		},
+		{
+			name: "operations problem",
+			c:    *calculatorTest,
+			args: args{
+				parsed: []string{
+					"*",
+					"2",
+					"-",
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "div by zero",
+			c:    *calculatorTest,
+			args: args{
+				parsed: []string{
+					"5",
+					"0",
+					"/",
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "unknown action",
+			c:    *calculatorTest,
+			args: args{
+				parsed: []string{
+					"5",
+					"0",
+					"sin",
+				},
+			},
+			want:    0,
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.compute(tt.args.parsed)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Calculator.compute(\"%v\") error = %v, wantErr %v", tt.args.parsed, err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Calculator.compute(\"%v\") = %v, want %v", tt.args.parsed, got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_compute(t *testing.T) {
+	type args struct {
+		a         float64
+		b         float64
+		operation string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    float64
+		wantErr bool
+	}{
+		{
+			name: "sum",
+			args: args{
+				a:         20,
+				b:         4,
 				operation: models.OperationSum,
 			},
-			Expected: 6,
+			want:    24,
+			wantErr: false,
 		},
 		{
-			Input: Input{
-				a:         4,
-				b:         2,
-				operation: models.OperationSub,
-			},
-			Expected: 2,
-		},
-		{
-			Input: Input{
-				a:         4,
-				b:         2,
+			name: "mult",
+			args: args{
+				a:         20,
+				b:         4,
 				operation: models.OperationMult,
 			},
-			Expected: 8,
+			want:    80,
+			wantErr: false,
+		},
+		{
+			name: "sub",
+			args: args{
+				a:         20,
+				b:         4,
+				operation: models.OperationSub,
+			},
+			want:    16,
+			wantErr: false,
+		},
+		{
+			name: "div",
+			args: args{
+				a:         20,
+				b:         4,
+				operation: models.OperationDiv,
+			},
+			want:    5,
+			wantErr: false,
+		},
+		{
+			name: "div on zero",
+			args: args{
+				a:         20,
+				b:         0,
+				operation: models.OperationDiv,
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "pow",
+			args: args{
+				a:         2,
+				b:         10,
+				operation: models.OperationPow,
+			},
+			want:    1024,
+			wantErr: false,
+		},
+		{
+			name: "unknown",
+			args: args{
+				a:         2,
+				b:         10,
+				operation: "cos",
+			},
+			want:    0,
+			wantErr: true,
 		},
 	}
-
-	for i, test := range tests {
-		res, err := compute(test.Input.a, test.Input.b, test.Input.operation)
-
-		if err != nil {
-			t.Errorf("test case #%d: got error: %v", i, err)
-		}
-
-		if res != test.Expected {
-			t.Errorf("test case #%d: got %v, expected %v", i, res, test.Expected)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := compute(tt.args.a, tt.args.b, tt.args.operation)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("compute(\"%v\", \"%v\", \"%v\") error = %v, wantErr %v", tt.args.a, tt.args.b, tt.args.operation, err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("compute(\"%v\", \"%v\", \"%v\") = %v, want %v", tt.args.a, tt.args.b, tt.args.operation, got, tt.want)
+			}
+		})
 	}
 }
 
-func TestComputeFnError(t *testing.T) {
-	_, err := compute(2, 0, models.OperationDiv)
+func TestCalculator_Compute(t *testing.T) {
+	loggerTest := logrus.New()
+	calculatorTest := New(loggerTest)
 
-	if err == nil {
-		t.Error("expected error")
+	type args struct {
+		input string
 	}
-}
-
-func TestGetNum(t *testing.T) {
-	input := "10"
-	var expected float64 = 10
-	stack := Stack{}
-	stack.Push(input)
-
-	res, err := getNum(&stack)
-
-	if err != nil {
-		t.Errorf("got error: %v", err)
+	tests := []struct {
+		name    string
+		c       Calculator
+		args    args
+		want    float64
+		wantErr bool
+	}{
+		{
+			name: "simple",
+			c:    *calculatorTest,
+			args: args{
+				input: "2+2",
+			},
+			want:    4,
+			wantErr: false,
+		},
+		{
+			name: "spaces",
+			c:    *calculatorTest,
+			args: args{
+				input: "2             +                    2",
+			},
+			want:    4,
+			wantErr: false,
+		},
+		{
+			name: "many acitons",
+			c:    *calculatorTest,
+			args: args{
+				input: "8*((4+3/3)/8)+15-2^4",
+			},
+			want:    4,
+			wantErr: false,
+		},
+		{
+			name: "negative at start",
+			c:    *calculatorTest,
+			args: args{
+				input: "-8*4+3",
+			},
+			want:    -29,
+			wantErr: false,
+		},
+		{
+			name: "negative after action",
+			c:    *calculatorTest,
+			args: args{
+				input: "8*-4+3",
+			},
+			want:    -29,
+			wantErr: false,
+		},
+		{
+			name: "negative at brakes start",
+			c:    *calculatorTest,
+			args: args{
+				input: "8*(-4+3)",
+			},
+			want:    -8,
+			wantErr: false,
+		},
+		{
+			name: "bad brakes #1",
+			c:    *calculatorTest,
+			args: args{
+				input: "8*((4+3)",
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "bad brakes #2",
+			c:    *calculatorTest,
+			args: args{
+				input: "8*4+3)",
+			},
+			want:    0,
+			wantErr: true,
+		},
+		{
+			name: "div by zero",
+			c:    *calculatorTest,
+			args: args{
+				input: "8/0",
+			},
+			want:    0,
+			wantErr: true,
+		},
 	}
-
-	if res != expected {
-		t.Errorf("got '%v', expected '%v'", res, expected)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := tt.c.Compute(tt.args.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Calculator.Compute(\"%v\") error = %v, wantErr %v", tt.args.input, err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("Calculator.Compute(\"%v\") = %v, want %v", tt.args.input, got, tt.want)
+			}
+		})
 	}
 }

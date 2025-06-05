@@ -60,7 +60,9 @@ func (c calcMiddleware) WithRecover(next echo.HandlerFunc) echo.HandlerFunc {
 		defer func() {
 			if r := recover(); r != nil {
 				c.logger.Errorf("Recovered: %v", r)
-				ctx.Response().WriteHeader(echo.ErrInternalServerError.Code)
+				ctx.JSON(echo.ErrInternalServerError.Code, models.ErrorResponse{
+					Error: "internal server error",
+				})
 			}
 		}()
 

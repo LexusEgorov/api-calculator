@@ -1,61 +1,99 @@
 package clevercalc
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
+
+var testsCount = 10
 
 func TestPush(t *testing.T) {
 	stack := Stack{}
 
-	input := "abc"
-	stack.Push(input)
+	for i := range testsCount {
+		input := fmt.Sprint(i)
+		stack.Push(input)
 
-	if len(stack.data) == 0 {
-		t.Error("stack is empty")
-	}
+		if len(stack.data) != i+1 {
+			t.Fatalf("stack size: %d, but expected %d", len(stack.data), i+1)
+		}
 
-	if stack.data[0] != input {
-		t.Errorf("not equal: got '%v', expected '%v'", stack.data[0], input)
+		if stack.data[len(stack.data)-1] != input {
+			t.Errorf("not equal: got: '%v', expected: '%v'", stack.data[len(stack.data)-1], input)
+		}
 	}
 }
 
 func TestPeek(t *testing.T) {
 	stack := Stack{}
 
-	input := "abc"
-	stack.Push(input)
-	res, err := stack.Peek()
+	for i := range testsCount {
+		input := fmt.Sprint(i)
+		stack.Push(input)
 
-	if err != nil {
-		t.Errorf("got error: %v", err)
-	}
+		size := len(stack.data)
+		peek, err := stack.Peek()
 
-	if res != input {
-		t.Errorf("not equal: got '%v', expected '%v'", res, input)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+
+		if len(stack.data) != size {
+			t.Fatalf("stack size changed after peek")
+		}
+
+		if peek != input {
+			t.Errorf("not equal: got: '%v', expected: '%v'", peek, input)
+		}
 	}
 }
 
-func TestPop(t *testing.T) {
+func TestPop_Normal(t *testing.T) {
 	stack := Stack{}
 
-	input := "abc"
-	stack.Push(input)
-	res, err := stack.Pop()
-
-	if err != nil {
-		t.Errorf("got error: %v", err)
+	for i := range testsCount {
+		stack.Push(fmt.Sprint(i))
 	}
 
-	if res != input {
-		t.Errorf("not equal: got '%v', expected '%v'", res, input)
+	for range testsCount {
+		size := len(stack.data)
+		expected := stack.data[size-1]
+		res, err := stack.Pop()
+
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+
+		if len(stack.data) == size {
+			t.Fatal("stack size doesn't change")
+		}
+
+		if expected != res {
+			t.Errorf("not equal: got: '%v', expected: '%v'", res, expected)
+		}
+	}
+}
+
+func TestPop_Empty(t *testing.T) {
+	stack := Stack{}
+
+	_, err := stack.Pop()
+
+	if err == nil {
+		t.Fatal("expected error, but got nothing")
 	}
 }
 
 func TestSize(t *testing.T) {
 	stack := Stack{}
 
-	input := "abc"
-	res := stack.Size()
+	for i := range testsCount {
+		res := stack.Size()
 
-	if res != len(stack.data) {
-		t.Errorf("not equal: got '%v', expected '%v'", res, input)
+		if res != len(stack.data) {
+			t.Errorf("stack size: %d, but expected %d", res, len(stack.data))
+		}
+
+		stack.Push(fmt.Sprint(i))
 	}
 }
