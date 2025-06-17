@@ -47,6 +47,7 @@ func New(handler CalcHandler, logger *logrus.Logger, port int) *Server {
 		port:    port,
 	}
 }
+
 func (s Server) Run() {
 	s.logger.Infof("Server is running on: localhost:%d", s.port)
 	if err := s.server.Start(fmt.Sprintf("localhost:%d", s.port)); err != nil {
